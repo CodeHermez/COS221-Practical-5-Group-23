@@ -39,7 +39,7 @@ Meet team behind the Hoop Streaming Platform:
     - Role: Frontend Specialist
     - GitHub: ThatiMX
 1. ***Lwando Msindo***
-    - Student Number: 20237890
+    - Student Number: 21507067
     - Role: API Integration
     - GitHub: lwandomsindo
 1. ***Bridget Nkosi***
