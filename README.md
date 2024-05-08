@@ -11,17 +11,17 @@ Welcome to the Hoop Streaming Platform project! As part of your second-year Comp
     - Users can explore additional data related to their favorite shows and movies.
 1. Social Features:
     - User Profiles: Users can create profiles, customize their preferences, and track their viewing history.
-    - *Ratings and Reviews:* Users can rate and review titles, sharing their opinions with the community.
-    - *Social Sharing:* Users can share their favorite content with friends and family.
+    - ***Ratings and Reviews:*** Users can rate and review titles, sharing their opinions with the community.
+    - ***Social Sharing:*** Users can share their favorite content with friends and family.
 ## Technology Stack
 Here's a breakdown of the technologies being used by your talented team:
 1. Frontend Development:
-    - *Languages:* Vanilla JavaScript, HTML, CSS
-    - *Frameworks/Libraries*: Potentially Bootstrap for UI components
+    - ***Languages:*** Vanilla JavaScript, HTML, CSS
+    - ***Frameworks/Libraries***: Potentially Bootstrap for UI components
 1. Backend Development:
-    - *Language:* PHP
-    - *Database Management System*: MySQL (for storing title information, user profiles, and reviews)
-    - *API Integration*: Connecting to external APIs (e.g., IMDb, TMDb) for additional data
+    - ***Language:*** PHP
+    - ***Database Management System***: MySQL (for storing title information, user profiles, and reviews)
+    - ***API Integration***: Connecting to external APIs (e.g., IMDb, TMDb) for additional data
 1. Testing and Deployment:
     - Write unit tests for critical components.
     - Run the application locally for development and testing.
@@ -30,27 +30,27 @@ Here's a breakdown of the technologies being used by your talented team:
 
 # Contributors
 Meet the talented team behind the Hoop Streaming Platform:
-*1. Matthew Gravette*
+1. ***Matthew Gravette***
     - Student Number: 23545977
     - Role: Backend Dev
     - GitHub: itsyaboijeff01
-1. Onthatile Molebaloa
+1. ***Onthatile Molebaloa***
     - Student Number: 23236789
     - Role: Frontend Specialist
     - GitHub: ThatiMX
-*1. Lwando Msindo*
+1. ***Lwando Msindo***
     - Student Number: 20237890
     - Role: API Integration
     - GitHub: lwandomsindo
-*1. Bridget Nkosi*
+1. ***Bridget Nkosi***
     - Student Number: 22664638
     - Role: Database Dev
     - GitHub: BridgetNkosi
-*1. Retshepile Nkwana*
+1. ***Retshepile Nkwana***
     - Student Number: 23239012
     - Role: Frontend Dev
     - GitHub: rets_nkwana
-*1. Bob Dlamini*
+1. ***Bob Dlamini***
     - Student Number: 21739120
     - Role: API Integration/DevOps
     - GitHub: CodeHermez
