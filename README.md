@@ -30,7 +30,7 @@ Here's a breakdown of the technologies being used by your talented team:
 
 # Contributors
 Meet the talented team behind the Hoop Streaming Platform:
-1. Matthew Gravette
+*1. Matthew Gravette*
     - Student Number: 23545977
     - Role: Backend Dev
     - GitHub: itsyaboijeff01
@@ -38,19 +38,19 @@ Meet the talented team behind the Hoop Streaming Platform:
     - Student Number: 23236789
     - Role: Frontend Specialist
     - GitHub: ThatiMX
-1. Lwando Msindo
+*1. Lwando Msindo*
     - Student Number: 20237890
     - Role: API Integration
     - GitHub: lwandomsindo
-1. Bridget Nkosi
+*1. Bridget Nkosi*
     - Student Number: 22664638
     - Role: Database Dev
     - GitHub: BridgetNkosi
-1. Retshepile Nkwana
+*1. Retshepile Nkwana*
     - Student Number: 23239012
     - Role: Frontend Dev
     - GitHub: rets_nkwana
-1. Bob Dlamini
+*1. Bob Dlamini*
     - Student Number: 21739120
     - Role: API Integration/DevOps
     - GitHub: CodeHermez
