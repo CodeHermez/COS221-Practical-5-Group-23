@@ -29,7 +29,7 @@ Here's a breakdown of the technologies being used by your talented team:
 ## Documentation can be found in the Documentation branch
 
 # Contributors
-Meet the talented team behind the Hoop Streaming Platform:
+Meet team behind the Hoop Streaming Platform:
 1. ***Matthew Gravette***
     - Student Number: 23545977
     - Role: Backend Dev
