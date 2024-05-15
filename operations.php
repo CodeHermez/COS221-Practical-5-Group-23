@@ -39,3 +39,13 @@ public function Login()
 */
 
 }
+
+class AddReview{
+    public $connection;
+    
+    public function __construct($db)
+    {
+        $this->connection = $db;
+    }
+}
+
