@@ -14,7 +14,6 @@ $dbc = $database->getConnection();
 $data = json_decode(file_get_contents("php://input"));
 //-------------------------------------------------------------------------------------------------------------------------------------
 
-
 if($_SERVER['REQUEST_METHOD'] === "POST"  && $data->type === "Register"){
     $usr_rgst = new Register($dbc);
     $response =  $usr_rgst->createUser();
