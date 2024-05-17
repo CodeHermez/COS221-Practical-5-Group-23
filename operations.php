@@ -546,7 +546,7 @@ class Logout{
     }
 }
 
-class AddReview{ //tomorrow
+class AddReview{ //today
     public $connection;
     
     public function __construct($db){
@@ -561,7 +561,7 @@ class AddReview{ //tomorrow
     */
 }
 
-class GetAllReviews{ 
+class GetAllReviews{  //today //maybe
     /* username
     media_ID*/
 
