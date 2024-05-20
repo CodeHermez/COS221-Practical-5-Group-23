@@ -16,7 +16,10 @@ $data = json_decode(file_get_contents("php://input"));
 
 if($_SERVER['REQUEST_METHOD'] === "POST"  && $data->type === "AddReview"){
     $new_review = new AddReview($dbc);
+    $response =  $new_review->handleAddReview($data);
 
+    header('Content-Type: application/json');
+    echo $response;
 }
 else{
     echo json_encode(array("status" => "error", "timestamp" => time(), "data"=> "No such request type exists"));

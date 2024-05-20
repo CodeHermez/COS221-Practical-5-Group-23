@@ -13,20 +13,8 @@ if($_SERVER['REQUEST_METHOD'] === "GET"){
     
     $usr_out = new Logout();
     $response =  $usr_out->handleLogout();
-
-    switch ($usr_out->response_code){
-        case 200:
-            header('HTTP/1.1 200 OK');
-            break;
-        case 400:
-            header('HTTP/1.1 400 Bad Request');
-            break;
-        default:
-            break;
-    }
     
     header('Content-Type: application/json');
-
     echo $response;
 }
 else{

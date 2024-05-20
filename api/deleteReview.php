@@ -14,9 +14,9 @@ $data = json_decode(file_get_contents("php://input"));
 //-------------------------------------------------------------------------------------------------------------------------------------
 
 
-if($_SERVER['REQUEST_METHOD'] === "POST"  && $data->type === "Login"){
-    $usr_login = new Login($dbc);
-    $response =  $usr_login->handleLogin();
+if($_SERVER['REQUEST_METHOD'] === "POST"  && $data->type === "DeleteReview"){
+    $remove_review = new DeleteReview($dbc);
+    $response =  $remove_review->handleDeleteReview($data);
 
     header('Content-Type: application/json');
     echo $response;

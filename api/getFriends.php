@@ -14,7 +14,10 @@ $data = json_decode(file_get_contents("php://input"));
 
 if($_SERVER['REQUEST_METHOD'] === "POST"  && $data->type === "GetFriends"){
     $get_friends = new GetFriends($dbc);
+    $response = $get_friends->handleGetFriends($data);
 
+    header('Content-Type: application/json');
+    echo $response;
 }
 else{
     echo json_encode(array("status" => "error", "timestamp" => time(), "data"=> "No such request type exists"));

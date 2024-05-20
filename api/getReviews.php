@@ -12,8 +12,12 @@ $dbc = $database->getConnection();
 $data = json_decode(file_get_contents("php://input"));
 //-------------------------------------------------------------------------------------------------------------------------------------
 
-if($_SERVER['REQUEST_METHOD'] === "POST"  && $data->type === "GetAllReviews"){
-    $get_reviews = new GetAllReviews($dbc);
+if($_SERVER['REQUEST_METHOD'] === "POST"  && $data->type === "GetReviews"){
+    $get_reviews = new GetReviews($dbc);
+    $response = $get_reviews->handleGetReviews($data);
+    
+    header('Content-Type: application/json');
+    echo $response;
 }
 else{
     echo json_encode(array("status" => "error", "timestamp" => time(), "data"=> "No such request type exists"));

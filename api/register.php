@@ -18,20 +18,6 @@ if($_SERVER['REQUEST_METHOD'] === "POST"  && $data->type === "Register"){
     $usr_rgst = new Register($dbc);
     $response =  $usr_rgst->createUser();
 
-    switch ($usr_rgst->response_code){
-        case 200:
-            header('HTTP/1.1 200 OK');
-            break;
-        case 400:
-            header('HTTP/1.1 400 Bad Request');
-            break;
-        case 500:
-            header('HTTP/1.1 500 Internal Server Error');
-            break;
-        default:
-            break;
-    }
-
     header('Content-Type: application/json');
     echo $response;
 }
