@@ -26,37 +26,32 @@ class Register{
     private $age;
     private $name;
     private $connection;
-    // public $response_code;
 
-    //    constructor takes in the database connection
     public function __construct($db){
         $this->connection = $db;
     }
 
     public function createUser($data){
-        
-        // $data = json_decode(file_get_contents("php://input"), true);
         $this->name = $data['name'] ?? null;
         $this->username = $data['username'] ?? null;
         $this->age = $data['age'] ?? null;
         $this->email = $data['email'] ?? null;
-        $this->password = $data['password'] ?? null; //make sure to store it with the restirctions
+        $this->password = $data['password'] ?? null; 
 
         if (!$this->name || !$this->username || !$this->age || !$this->email || !$this->password) {
             http_response_code(400);
             return createJSONResponse("error", "All fields are required.");
         }
     
-        //check if user exists already
-             //name, username, email, password
-        if($this->exists($this->name, $this->username, $this->age, $this->email)){       
-            // $this->response_code = 400; //??????
+        //check if email and/or username exist
+        $exists = $this->exists($this->username,  $this->email);
+        if($exists['exists']==true){       
             http_response_code(400);
-            $response = "User is already registered.";
-            return createJSONResponse("error", $response);
+            return createJSONResponse("error", $exists['message']);
         }
 
-        $information = $this->valid($this->name, $this->username, $this->age, $this->email, $this->password );
+        //structure checking
+        $information = $this->valid($this->age, $this->email, $this->password );
         
         if($information["valid"]){
             //create the salt and add salt to password
@@ -79,92 +74,107 @@ class Register{
             if($stmt->execute()){ 
                 $_SESSION['loggedIn'] = true;
                 setcookie('username', $this->username, time() + 3600, '/');
-                // $this->response_code = 200;
                 http_response_code(200);
                 $status = "success";
                 $msg = ["username" => $this->username];
             }
             else{
                 http_response_code(500); 
-                // $this->response_code = 400;
-                $status = "error"; //400
+                $status = "error"; 
                 $msg = $this->connection->error;
             }
         }
         else{
             http_response_code(400); 
-            // $this->response_code = 400;
             $status = "error"; //400
             $msg = $information['message'];
         }    
 
         unset($stmt);
 
-        /*return [
-            "status" => $status,
-            "timestamp" => time(),
-            "data" => $msg
-        ];   */
-
         return createJSONResponse($status, $msg);
     }
 
-    private function exists($name, $username, $age, $email){
-        $query = 'SELECT * FROM user WHERE name=? AND username=? AND age=? AND email=?';
+    private function exists($username, $email){
+        $flag = false; //assume user DNE
+        $response="";
+
+        $query = 'SELECT username, email FROM user WHERE username=? OR email=?';
         $stmt = $this->connection->prepare($query);
 
         //if stmt has no results then the user does not exist yet 
         
-        $stmt->bindParam(1, $name,  PDO::PARAM_STR);
-        $stmt->bindParam(2, $username, PDO::PARAM_STR);
-        $stmt->bindParam(3, $age, PDO::PARAM_INT);
-        $stmt->bindParam(4, $email, PDO::PARAM_STR);
-        $stmt->execute();
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $stmt->bindParam(1, $username, PDO::PARAM_STR);
+        $stmt->bindParam(2, $email, PDO::PARAM_STR);
+        if($stmt->execute()){
+            //if no matches return false
+            if($stmt->rowCount() == 0){
+                unset($stmt);
+                return [
+                    "exists" => false,
+                    "message" => ""
+                ];
+            }
 
-        unset($stmt);
+            $results = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        return ($result!=false); 
+            //check if only username matched
+            if($results['username']===$username && $results['email']!=$email){
+                unset($stmt);
+                return [
+                    "exists" => true,
+                    "message" => "Username is taken."
+                ];
+            }
+
+            //check if only email matched
+            if($results['username']!=$username && $results['email']===$email){
+                unset($stmt);
+                return [
+                    "exists" => true,
+                    "message" => "Email is in use."
+                ];
+            }
+
+            //check if both matched
+            if($results['username']===$username && $results['email']===$email){
+                unset($stmt);
+                return [
+                    "exists" => true,
+                    "message" => "Username and email are in use."
+                ];
+            }
+        }
+        else{
+            unset($stmt);
+            return [
+                "exists" => $flag,
+                "message" => $stmt->error
+            ];
+        }
     }
 
-    private function valid($name, $username, $age, $email, $password){
-        //check that name is valid
-        $nameValid = $this->validateUserInput($name, "name");
-        if(!$nameValid["valid"]){
-            return ["valid" => false, "message" => $nameValid["errMsg"]];
-            // return createJSONResponse("error", $nameValid["errMsg"]);
-        }
-
-        //check that username is valid
-        $usernameValid = $this->validateUserInput($username, "username");
-        if (!$usernameValid["valid"]) {
-            return ["valid" => false, "message" => $usernameValid["errMsg"]];
-            // return createJSONResponse("error", $usernameValid["errMsg"]);
-        }
-
+    private function valid($age, $email, $password){
+    
         //check that age is valid
         $ageValid = $this->validateUserInput($age, "age");
         if (!$ageValid["valid"]) {
             return ["valid" => false, "message" => $ageValid["errMsg"]];
-            // return createJSONResponse("error", $ageValid["errMsg"]);
         }
 
         //check that email is valid
         $emailValid = $this->validateUserInput($email, "email");
         if (!$emailValid["valid"]) {
             return ["valid" => false, "message" =>  $emailValid["errMsg"]];
-            // return createJSONResponse("error", $emailValid["errMsg"]);
         }
 
         //check that the password is valid
         $passwordValid = $this->validateUserInput($password, "password");
         if (!$passwordValid["valid"]) {
             return ["valid" => false, "message" =>  $passwordValid["errMsg"]];
-            // return createJSONResponse("error", $passwordValid["errMsg"]);
         }
 
         return ["valid" => true, "message" => "Valid input"];
-        // return createJSONResponse("success", null);
     }
 
     private function validateUserInput($var, $varType){
@@ -172,61 +182,23 @@ class Register{
         $valid = true;
 
         switch($varType){
-            case 'name':
-                if(trim($var) == ''){
-                    $errMsg = "Name was not provided.";
-                    $valid = false;
-                    // $this->response_code = 400;
-                }
-                break;
-            case 'username':
-                if(trim($var) == ''){
-                    $valid = false;
-                    $errMsg = "Username was not provided.";
-                    // $this->response_code = 400;
-                    break;
-                }
-                $info = $this->validUsername($var);
-                if(!$info['valid']){
-                    $valid = false;
-                    $errMsg = $info['message'];
-                    // $this->response_code = 400;
-                }
-                break;
-
             case 'age':
-                if(trim($var) == ''){
+                if(trim($var) < 0){
                     $valid = false;
-                    $errMsg = "Age was not provided.";
-                    // $this->response_code = 400;
+                    $errMsg = "Age must be a positive integer.";
                 } 
                 break;
 
             case 'email':
-                if(trim($var) == ''){
-                    $valid = false;
-                    $errMsg = "Email was not provided.";
-                    // $this->response_code = 400;
-                    break;
-                } 
                 $info = $this->validEmail($var);
-
                 if(!$info['valid']){
                     $valid = false;
                     $errMsg = $info['message'];
-                    // $this->response_code = 400;
                 }
                 break;
 
             case 'password':
-                if(trim($var) == ''){
-                    $valid = false;
-                    $errMsg = "Password was not provided.";
-                    // $this->response_code = 400;
-                    break;
-                } 
                 $info = $this->validPassword($var);
-
                 if(!$info['valid']){
                     $valid = false;
                     $errMsg = $info['message'];
@@ -244,49 +216,6 @@ class Register{
         ];
 
         return $errorInfo;
-    }
-
-    private function validUsername($username){
-        //check if the username already exists
-
-        $exists = false;
-        $flag = true;
-        $msg = "";
-
-        $query = "SELECT username FROM user WHERE username=?";
-
-        $stmt = $this->connection->prepare($query);
-        $stmt->bindParam(1, $username,  PDO::PARAM_STR);
-
-        if($stmt->execute()){   //statement was executed
-            $result = $stmt->fetch(PDO::FETCH_ASSOC);
-            $exists = ($result!=false);
-
-            if($exists){
-                $flag = false;  
-                $msg = "Username has been taken.";
-                // $this->response_code = 400;
-            }
-        }
-        else{
-            $flag = false;
-            // $msg = "Server Error. Try again later.";
-            // $this->response_code = 500;
-            // http_response_code(500); 
-            // $this->response_code = 400;
-            // $status = "error"; //400
-            $msg = $this->connection->error;
-        }
-
-        unset($stmt);
-        
-
-       $info = [
-            "valid"=>$flag,
-            "message" => $msg
-        ];
-
-        return $info;
     }
 
     private function validPassword($password){
@@ -349,59 +278,18 @@ class Register{
         return $info;
     }
 
-    private function validEmail($email){ //change this - dont user reg expression
-        //check that it doesnt already exist in the database - DNE==TRUE ELSE FALSE
+    private function validEmail($email){ 
         //check that the structure is valid - VALIDSTRUCT==TRUE ELSE FALSE
-
-        $exists = false;
-        $flag = true;
-        $msg = "";
-
-        $query = "SELECT email FROM user WHERE email=?";
-
-        $stmt = $this->connection->prepare($query);
-        $stmt->bindParam(1, $email,  PDO::PARAM_STR);
-
-        if($stmt->execute()){   //statement was executed
-            $result = $stmt->fetch(PDO::FETCH_ASSOC);
-            $exists = ($result!=false);
-
-            if(!$exists){
-                // $re = '/^[A-Za-z0-9\x{0430}-\x{044F}\x{0410}-\x{042F}\._-]+@([A-Za-z0-9\x{0430}-\x{044F}\x{0410}-\x{042F}]{1,2}|[A-Za-z0-9\x{0430}-\x{044F}\x{0410}-\x{042F}]((?<!(\.\.))[A-Za-z0-9\x{0430}-\x{044F}\x{0410}-\x{042F}.-])+[A-Za-z0-9\x{0430}-\x{044F}\x{0410}-\x{042F}])\.[A-Za-z\x{0430}-\x{044F}\x{0410}-\x{042F}]{2,}$/iu';
-                // if(preg_match($re, $email)!==1){
-                //     // $validStructure =false;
-
-                //     $flag = false;
-                //     $msg = "Invalid structure for email.";
-                // }
-
-                if(!filter_var($email, FILTER_VALIDATE_EMAIL)){
-                    $flag = false;  
-                    $msg = "Invalid structure for email.";
-                    // $this->response_code = 400;
-                }
-            }
+        if(!filter_var($email, FILTER_VALIDATE_EMAIL)){
+            return[
+                "valid" => false,
+                "message" => "Invalid structure for email."
+            ];
         }
-        else{
-            $flag = false;
-            // $msg = "Server error. Try again later.";
-            // $this->response_code = 500;
-
-            // http_response_code(500); 
-            // $this->response_code = 400;
-            // $status = "error"; //400
-            $msg = $this->connection->error;
-        }
-
-        unset($stmt);
-        
-
-       $info = [
-            "valid"=>$flag,
-            "message" => $msg
+        return [
+            "valid" => true,
+            "message" => "Email structure is valid."
         ];
-
-        return $info;
     }
 
     private function getRandomString(){
@@ -431,7 +319,6 @@ class Login{
     }
 
     private function validCredentials(){
-        // global $conn;
         $data="";
         $status = false;
 
@@ -439,29 +326,31 @@ class Login{
 
         //check if email has been set
         //check if password has been set
-        if(empty(trim($requestData["email"]))){
-            // return createJSONResponse('error', "Please provide an email.");
-            $info = [
-                "status" => $status,
-                "data" => "Please provide an email."
-            ];
-            return $info;
+        // if(empty(trim($requestData["email"]))){
+        //     $info = [
+        //         "status" => $status,
+        //         "data" => "Please provide an email."
+        //     ];
+        //     return $info;
+        // }
+        // if(empty(trim($requestData["password"]))){ 
+        //     // return createJSONResponse('error', "Please provide a password.");
+        //     $info = [
+        //         "status" => $status,
+        //         "data" => "Please provide a password."
+        //     ];
+        //     return $info;
+        // }
+
+        $email = trim($requestData["email"]) ?? null;
+        // $this->username = trim($requestData["username"]) ?? null;
+        $password = trim($requestData["password"]) ?? null;
+
+        if (!$email || !$password) {
+            http_response_code(400);
+            return createJSONResponse("error", "All fields are required.");
         }
 
-        if(empty(trim($requestData["password"]))){ 
-            // return createJSONResponse('error', "Please provide a password.");
-            $info = [
-                "status" => $status,
-                "data" => "Please provide a password."
-            ];
-            return $info;
-        }
-
-        $email = trim($requestData["email"]);
-
-        //check if email exits in db
-        // if($this->exists($email)){
-        $password = trim($requestData["password"]);
 
         $query = 'SELECT salt, password, username, name FROM user WHERE email=?';
         $stmt = $this->connection->prepare($query);
@@ -498,7 +387,7 @@ class Login{
 
             // http_response_code(500); 
                 // $status = "error"; //400
-                $data = $this->connection->error;
+            $data = $this->connection->error;
         }
 
         unset($stmt);
@@ -534,7 +423,6 @@ class Login{
             $status="";
             $data="";
 
-  
             //send to validRequest
             $credentialsValid = $this->validCredentials();
             //if validRequest is true
@@ -550,6 +438,7 @@ class Login{
             else{
                 // http_response_code(400);
                 // $this->response_code = 400;
+                $_SESSION["loggedIn"] = false;
                 http_response_code(400);
                 if (session_status() === PHP_SESSION_ACTIVE) {
                     session_destroy();
@@ -569,6 +458,7 @@ class Logout{
 
     public function handleLogout(){
         if(isset($_SESSION["loggedIn"]) && $_SESSION["loggedIn"] == true){
+            $_SESSION= false; //wait
             session_unset();
             session_destroy();
             setcookie("username", "", time() - 3600, "/");
@@ -583,11 +473,11 @@ class Logout{
     }
 }
 
-class AddReview{  
+class AddReview{  //restricted to a user who is logged in
     private $connection;
-    private $star_rating;
+    private $starRating;
     private $comment;
-    private $media_id;
+    private $mediaID;
     private $username;
     // public $code;
 
@@ -603,32 +493,34 @@ class AddReview{
         */
 
         //check is username is set
-        if (!isset($_COOKIE['username'])) {
+        if (!isset($_SESSION['loggedIn'])) {
             http_response_code(401);
             return createJSONResponse("error", "User is not logged in.");
         } 
 
-        if(!isset($data['mediaID']) ||!isset($data['starRating'])){    //star rating required?
+        $this->starRating = $data['starRating'] ?? null;
+        $this->mediaID = $data['mediaID'] ?? null;
+
+        if(!$this->starRating || !$this->mediaID){    //star rating required?
             http_response_code(400);
             return createJSONResponse("error", "Missing parameters.");
         }
 
         // $username = $_COOKIE['username'];
-        $this->star_rating = $data['starRating'];
-        $this->comment = $data['comment']; 
-        $this->media_id = $data['mediaID'];
+        // $this->starRating = $data['starRating'];
+        $this->comment = trim($data["comment"]) ?? null; 
+        // $this->mediaID = $data['mediaID'];
         $this->username = $_COOKIE['username'];
 
         $query = 'INSERT INTO content_review (comments, starRating, mediaID) VALUES (?, ?, ?)';
         $stmt = $this->connection->prepare($query);
         $stmt->bindParam(1, $this->comment,  PDO::PARAM_STR); 
-        $stmt->bindParam(2, $this->star_rating, PDO::PARAM_INT);
-        $stmt->bindParam(3, $this->media_id, PDO::PARAM_INT);
+        $stmt->bindParam(2, $this->starRating, PDO::PARAM_INT);
+        $stmt->bindParam(3, $this->mediaID, PDO::PARAM_INT);
 
         if(!$stmt->execute()){
             http_response_code(500);
             return createJSONResponse("error", $stmt->error);
-            
         }
 
         //get review ID FROM CONTENT REIVEW
@@ -636,23 +528,31 @@ class AddReview{
 
         $query = 'INSERT INTO writes (reviewID, username) VALUES (?, ?)';
         $stmt = $this->connection->prepare($query);
-        $stmt->bindParam(1, $insert_id,  PDO::PARAM_INT); //text
+        $stmt->bindParam(1, $insert_id,  PDO::PARAM_INT); 
         $stmt->bindParam(2, $this->username, PDO::PARAM_STR);
 
         if(!$stmt->execute()){
+            //delete the insert into content_review
+            $query2 = 'DELETE FROM content_review WHERE reviewID = ?';
+            $stmt2 = $this->connection->prepare($query2);
+            $stmt2->bindParam(1, $insert_id,  PDO::PARAM_INT);
+            $stmt2->execute();
+
             return createJSONResponse("error", $stmt->error);
         }
 
+        unset($stmt);
+
         // $this->code = 200; // OK
-        http_response_code((200));
+        http_response_code(200);
         return createJSONResponse("success", "Added review successfully");
     }
 }
 
-class GetReviews{  
+class GetReviews{  //no restrictoins //add filter and sort for star rating
     /* username
     
-    media_ID*/
+    mediaID*/
     private $connection;
     private $username;
  
@@ -694,11 +594,12 @@ class GetReviews{
                     ]
                 */
         
-            $limit= $data['limit'] ?? 20;  //default
+            
+                $limit= $data['limit'] ?? 20;  //default
             // $this->username = $_COOKIE['username'];
             $query = 'SELECT title, starRating, comments FROM writes
             INNER JOIN content_review cr on writes.reviewID = cr.reviewID
-            INNER JOIN entertainment_content ec on cr.mediaID = ec.media_ID
+            INNER JOIN entertainment_content ec on cr.mediaID = ec.mediaID
             WHERE username = ?
             LIMIT ?';
 
@@ -708,21 +609,27 @@ class GetReviews{
 
             if($stmt->execute()){
                 $resultArr = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                //check if anything was returnd
+                if(count($resultArr)==0){
+                    unset($stmt);
+                    return createJSONResponse("error", "User, {$data['username']}, has not written any reviews.");
+                }
 
                 $response = []; //if this is returned then the user has no comments? 
                 foreach($resultArr as $row){
                     $response[] = [
                         'title' => $row['title'],
                         'username' => $data['username'],
-                        'starRating' => $row['starRating'],
+                        'starRating' => (float) $row['starRating'],
                         'comment' => $row['comments']
                     ];
                 }
-
+                unset($stmt);
                 http_response_code(200);
                 return createJSONResponse("success", $response);
             } 
             else{
+                unset($stmt);
                 http_response_code(500);
                 createJSONResponse("error", $this->connection->error);
             }
@@ -731,10 +638,10 @@ class GetReviews{
             /*
                 Get review based on media ID
 
-                SELECT media_ID,title,username,starRating,comments FROM writes
+                SELECT mediaID,title,username,starRating,comments FROM writes
                 INNER JOIN hoop.content_review cr on writes.reviewID = cr.reviewID
-                INNER JOIN hoop.entertainment_content ec on cr.mediaID = ec.media_ID
-                WHERE media_ID = ?
+                INNER JOIN hoop.entertainment_content ec on cr.mediaID = ec.mediaID
+                WHERE mediaID = ?
                 LIMIT ?;
             */
             //return body - for media
@@ -744,7 +651,7 @@ class GetReviews{
                         mediaID => 
                         title =>
                         username => fjakjfa,
-                        star_rating => 4.5,
+                        starRating => 4.5,
                         comment => 
                     }
                 ]
@@ -753,10 +660,10 @@ class GetReviews{
             $mediaID = $data['mediaID'];
             $limit= $data['limit'] ?? 20;  //default
 
-            $query = 'SELECT media_ID,title,username,starRating,comments FROM writes
+            $query = 'SELECT mediaID,title,username,starRating,comments FROM writes
             INNER JOIN content_review cr on writes.reviewID = cr.reviewID
-            INNER JOIN entertainment_content ec on cr.mediaID = ec.media_ID
-            WHERE media_ID = ?
+            INNER JOIN entertainment_content ec on cr.mediaID = ec.mediaID
+            WHERE mediaID = ?
             LIMIT ?';
 
             $stmt = $this->connection->prepare($query);
@@ -766,18 +673,25 @@ class GetReviews{
             if($stmt->execute()){
                 $resultArr = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+                if(count($resultArr)==0){
+                    unset($stmt);
+                    return createJSONResponse("error", "No reviews for media with the ID - {$mediaID}.");
+                }
+
                 foreach($resultArr as $row){
                     $response[] = [
-                        'media_ID' => $row['media_ID'],
+                        'mediaID' => $row['mediaID'],
                         'title' => $row['title'],
                         'username' => $row['username'],
                         'starRating' => $row['starRating'],
                         'comment' => $row['comments']
                     ];
                 }
+                unset($stmt);
                 http_response_code(200);
                 return createJSONResponse("success", $response);
             }else{
+                unset($stmt);
                 http_response_code(500);
                 createJSONResponse("error", $this->connection->error);
             }
@@ -785,9 +699,9 @@ class GetReviews{
     }
 }
 
-class DeleteReview{
+class DeleteReview{ //restricted to a user who is logged in
     private $connection;
-    private $username;
+    // private $username; 
     //username
     //reviewID
 
@@ -795,8 +709,14 @@ class DeleteReview{
         $this->connection = $db;
     }
 
-    public function handleDeleteReview(){
-        if(!isset($data['username']) && !isset($data['reviewID'])){  //at least one must be initialised
+    public function handleDeleteReview($data){ //frontend would have to ensure that users can only delete their own comments
+        
+        if(!isset($_SESSION['loggedIn'])){
+            http_response_code(400);
+            createJSONResponse("error", "User is not logged in.");
+        }
+        
+        if((!isset($data['username']) || $data['username']==null) || (!isset($data['reviewID']) || $data['reviewID']==null)){  //at least one must be initialised
             //error
             http_response_code(400);
             return createJSONResponse("error", "Missing parameters.");
@@ -804,7 +724,7 @@ class DeleteReview{
 
         //delete specific comment
         if(isset($data['reviewID'])){
-            $query = 'DELETE FROM writes reviewID = ?';
+            $query = 'DELETE FROM writes WHERE reviewID = ?';
             $query2 = 'DELETE FROM content_review WHERE reviewID = ?';
             $stmt1 = $this->connection->prepare($query);
             $stmt2 = $this->connection->prepare($query2);
@@ -812,16 +732,39 @@ class DeleteReview{
             $stmt1->bindParam(1, $data['reviewID'],  PDO::PARAM_INT);
 
             if($stmt1->execute()){
-                $stmt1->bindParam(2, $data['reviewID'],  PDO::PARAM_INT);
+
+                if($stmt1->rowCount() == 0){
+                    //nothing was deleted 
+                    unset($stmt1);
+                    http_response_code(400);
+                    return createJSONResponse("error", "No deletions were made. Check reviewID.");
+                }
+
+
+                $stmt2->bindParam(1, $data['reviewID'],  PDO::PARAM_INT);
 
                 if($stmt2->execute()){
+                    if($stmt1->rowCount() == 0){
+                        //nothing was deleted 
+                        unset($stmt1);
+                        unset($stmt2);
+                        http_response_code(400);
+                        return createJSONResponse("error", "No deletions were made. Check reviewID.");
+                    }
+
+                    unset($stmt1);
+                    unset($stmt2);
                     http_response_code(200);
                     return createJSONResponse("success", "Review successfully deleted.");
                 } else {
+                    unset($stmt1);
+                    unset($stmt2);
                     http_response_code(500); //?
                     return createJSONResponse("error", $this->connection->error); //review id ne in content_review??
                 }
             } else {
+                unset($stmt1);
+                unset($stmt2);
                 http_response_code(500);//?
                 return createJSONResponse("error",$this->connection->error); //review id dne in writes?
             }
@@ -846,14 +789,14 @@ class DeleteReview{
 class GetFriends{ //get request
     //usernameOrigin
     private $connection;
-    private $username; //not all logged in user will have this ability
+    // private $username; //anyone will have this ability
 
     public function __construct($db){
         $this->connection = $db;
     }
 
     public function handleGetFriends($data){
-        if (!isset($data['username'])) {
+        if (!isset($data['username']) || $data['username']==null) {
             http_response_code(400);
             return createJSONResponse("error", "Missing username parameter.");
         }
@@ -861,7 +804,7 @@ class GetFriends{ //get request
         try {
             $query = 'SELECT friendID FROM friend WHERE username=?';
             $stmt = $this->connection->prepare($query);
-            $stmt->bindParam(1, $this->username,  PDO::PARAM_STR);
+            $stmt->bindParam(1, $data['username'],  PDO::PARAM_STR);
 
             if($stmt->execute()){
                 $resultArr = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -872,15 +815,18 @@ class GetFriends{ //get request
                         'friendID' => $row['friendID']
                     ];
                 }
+                unset($stmt);
     
                 http_response_code(200);
                 return createJSONResponse("success", $response);
             }
             else{
+                unset($stmt);
                 http_response_code(500);
                 return createJSONResponse("error", $this->connection->error); //??
             }
         } catch (PDOException $e) {
+            unset($stmt);
             http_response_code(500);
             return createJSONResponse("error", $e->getMessage());
         }
@@ -903,7 +849,7 @@ class GetFriends{ //get request
     */
 }
 
-class AddFriend{
+class AddFriend{ //done
     /* usernameOrigin
     usernameFriend
     */
@@ -916,9 +862,14 @@ class AddFriend{
     }
 
     public function handleAddFriend($data){
-        if(!isset($_COOKIE['username']) || !isset($data['friendID'])){
+        if(!isset($_COOKIE['username'])){
             http_response_code(400);
-            return createJSONResponse("error", "Missing parameters.");
+            return createJSONResponse("error", "User is not logged in.");
+        }
+
+        if(!isset($data['friendID'])){
+            http_response_code(400);
+            return createJSONResponse("error", "Missing parameter.");
         }
 
         try {
@@ -929,16 +880,19 @@ class AddFriend{
             $stmt->bindParam(2, $data['friendID'], PDO::PARAM_STR);
 
             if($stmt->execute()){
+                unset($stmt);
                 http_response_code(200);
                 return createJSONResponse("success", "Friend added successfully.");
             }
-            else{
+            else{ //could be unreachable
+                unset($stmt);
                 http_response_code(400);
-                return createJSONResponse("error", $this->connection->error); //verify
+                return createJSONResponse("error", "1" . $this->connection->error); //verify
             }
         } catch(PDOException $e){
+            unset($stmt);
             http_response_code(500);
-            return createJSONResponse("error", $e->getMessage());
+            return createJSONResponse("error",  "User, {$data['friendID']}, does not exist.");
         }
     }
 }
@@ -959,12 +913,17 @@ class RemoveFriend{
     }
 
     public function handleRemoveFriend($data){
-        if (!isset($_COOKIE['username']) || !isset($data['friendID'])) {
+        if(!isset($_COOKIE['username'])){
+            http_response_code(400);
+            return createJSONResponse("error", "User is not logged in.");
+        }
+
+        if(!isset($data['friendID']) || !isset($data['username'])){ //allows admin accounts to oversee removing friends as well as users
             http_response_code(400);
             return createJSONResponse("error", "Missing parameters.");
         }
 
-        $this->username = $_COOKIE['username'];
+        $this->username = $data['username'];
         $this->friend = $data['friendID'];
 
         //get confirmation on how friendship works
@@ -976,17 +935,22 @@ class RemoveFriend{
 
         try {
             if($stmt->execute()){
+                unset($stmt);
                 http_response_code(200);
-                return createJSONResponse("success", "{$data['friendID']} successfully removed.");
+                return createJSONResponse("success", "{$data['friendID']} successfully removed from {$data['username']}'s friends.");
             }
             else{
+                unset($stmt);
                 http_response_code(500);
                 return createJSONResponse("error", $this->connection->error);
             }
         } catch (PDOException $e) {
+            unset($stmt);
+            http_response_code(500);
             return createJSONResponse("error", $e->getMessage());
         }
     }
 
     
 }
+
