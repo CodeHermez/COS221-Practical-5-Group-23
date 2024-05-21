@@ -692,12 +692,12 @@ class DeleteReview{ //restricted to a user who is logged in
 
     public function handleDeleteReview($data){ //frontend would have to ensure that users can only delete their own comments
         
-        if(!isset($_SESSION['loggedIn'])){
-            http_response_code(400);
-            createJSONResponse("error", "User is not logged in.");
-        }
+        if (!isset($_SESSION['loggedIn'])) {
+            http_response_code(401);
+            return createJSONResponse("error", "User is not logged in.");
+        } 
         
-        if((!isset($data['username']) || $data['username']==null) || (!isset($data['reviewID']) || $data['reviewID']==null)){  //at least one must be initialised
+        if(!isset($data['reviewID']) || $data['reviewID']==null){  //at least one must be initialised
             //error
             http_response_code(400);
             return createJSONResponse("error", "Missing parameters.");
@@ -720,7 +720,6 @@ class DeleteReview{ //restricted to a user who is logged in
                     http_response_code(400);
                     return createJSONResponse("error", "No deletions were made. Check reviewID.");
                 }
-
 
                 $stmt2->bindParam(1, $data['reviewID'],  PDO::PARAM_INT);
 
