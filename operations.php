@@ -581,9 +581,8 @@ class GetReviews{  //no restrictoins //add filter and sort for star rating
             // $this->username = $_COOKIE['username'];
             $query = 'SELECT title, starRating, comments FROM writes
             INNER JOIN content_review cr on writes.reviewID = cr.reviewID
-            INNER JOIN entertainment_content ec on cr.mediaID = ec.mediaID
-            WHERE username = ?
-            LIMIT ?';
+            INNER JOIN entertainment_content ec on cr.mediaID = ec.media_ID
+            WHERE username = ? LIMIT ?';
 
             $stmt = $this->connection->prepare($query);
             $stmt->bindParam(1, $data['username'],  PDO::PARAM_STR);
@@ -644,7 +643,7 @@ class GetReviews{  //no restrictoins //add filter and sort for star rating
 
             $query = 'SELECT mediaID,title,username,starRating,comments FROM writes
             INNER JOIN content_review cr on writes.reviewID = cr.reviewID
-            INNER JOIN entertainment_content ec on cr.mediaID = ec.mediaID
+            INNER JOIN entertainment_content ec on cr.mediaID = ec.media_ID
             WHERE mediaID = ?
             LIMIT ?';
 
