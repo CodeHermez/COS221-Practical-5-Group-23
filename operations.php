@@ -580,7 +580,7 @@ class GetReviews{  //no restrictoins //add filter and sort for star rating
         
             
                 $limit= $data['limit'] ?? 20;  //default
-            // $this->username = $_COOKIE['username'];
+
             $query = 'SELECT title, starRating, comments FROM writes
             INNER JOIN content_review cr on writes.reviewID = cr.reviewID
             INNER JOIN entertainment_content ec on cr.mediaID = ec.media_ID
@@ -936,3 +936,35 @@ class RemoveFriend{
     
 }
 
+class GetUsers{
+    private $connection;
+
+    public function __construct($db){
+        $this->connection = $db;
+    }
+
+    public function handleGetUsers($data){
+        $limit = isset($data['limit']) ? (int)$data['limit'] : 20;
+        $order = isset($data['order']) ? strtoupper($data['order']) : "ASC";
+
+        if(!in_array($order, ["ASC", "DESC"])){
+            $order = "ASC";
+        }
+
+        $query = "SELECT name, email, username, age, created_at FROM user ORDER BY name $order LIMIT :limit";
+        $stmt = $this->connection->prepare($query);
+        $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+
+        if($stmt->execute()){
+            $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            unset($stmt);
+
+            http_response_code(200);
+            return createJSONResponse("success", $users);
+        } else {
+            return createJSONResponse("error", "Failed to retrieve users.");
+        }
+
+    }
+
+}
