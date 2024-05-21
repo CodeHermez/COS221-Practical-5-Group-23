@@ -13,7 +13,7 @@ function createJSONResponse($status, $returnArr){
     if($status=='error'){
         $return['message'] = $returnArr;
     }elseif($status=='success'){
-        $return['data'] = [$returnArr];
+        $return['data'] = $returnArr;
     }
 
     return json_encode($return);
@@ -77,6 +77,8 @@ class Register{
                 http_response_code(200);
                 $status = "success";
                 $msg = ["username" => $this->username];
+
+                return createJSONResponse($status, [$msg]);
             }
             else{
                 http_response_code(500); 
@@ -442,7 +444,7 @@ class Logout{
             session_destroy();
             setcookie("username", "", time() - 3600, "/");
             http_response_code(200);
-            return createJSONResponse("success", "Logout successful.");
+            return createJSONResponse("success", ["Logout successful."]);
 
         } else {
             http_response_code(401);
@@ -527,7 +529,7 @@ class AddReview{  //restricted to a user who is logged in
        
         // $this->code = 200; // OK
         http_response_code(200);
-        return createJSONResponse("success", "Added review successfully");
+        return createJSONResponse("success", ["Added review successfully."]);
     }
 }
 
@@ -735,7 +737,7 @@ class DeleteReview{ //restricted to a user who is logged in
                     unset($stmt1);
                     unset($stmt2);
                     http_response_code(200);
-                    return createJSONResponse("success", "Review successfully deleted.");
+                    return createJSONResponse("success", ["Review successfully deleted."]);
                 } else {
                     unset($stmt1);
                     unset($stmt2);
@@ -776,7 +778,7 @@ class GetFriends{ //get request
     }
 
     public function handleGetFriends($data){
-        if (!isset($data['username']) || $data['username']==null) {
+        if(!isset($data['username']) || $data['username']==null){
             http_response_code(400);
             return createJSONResponse("error", "Missing username parameter.");
         }
@@ -862,7 +864,7 @@ class AddFriend{ //done
             if($stmt->execute()){
                 unset($stmt);
                 http_response_code(200);
-                return createJSONResponse("success", "Friend added successfully.");
+                return createJSONResponse("success", ["Friend added successfully."]);
             }
             else{ //could be unreachable
                 unset($stmt);
@@ -917,7 +919,7 @@ class RemoveFriend{
             if($stmt->execute()){
                 unset($stmt);
                 http_response_code(200);
-                return createJSONResponse("success", "{$data['friendID']} successfully removed from {$data['username']}'s friends.");
+                return createJSONResponse("success", ["{$data['friendID']} successfully removed from {$data['username']}'s friends."]);
             }
             else{
                 unset($stmt);
