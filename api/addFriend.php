@@ -15,7 +15,7 @@ $data = json_decode(file_get_contents("php://input"), true);
 //-------------------------------------------------------------------------------------------------------------------------------------
 
 
-if($_SERVER['REQUEST_METHOD'] === "POST"  && $data->type === "AddFriend"){
+if($_SERVER['REQUEST_METHOD'] === "POST"  && $data['type'] === "AddFriend"){
     $new_friend = new AddFriend($dbc);
     $response = $new_friend->handleAddFriend($data);
 

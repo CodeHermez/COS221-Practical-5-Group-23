@@ -12,7 +12,7 @@ $dbc = $database->getConnection();
 $data = json_decode(file_get_contents("php://input"), true);
 //-------------------------------------------------------------------------------------------------------------------------------------
 
-if($_SERVER['REQUEST_METHOD'] === "POST"  && $data->type === "RemoveFriend"){
+if($_SERVER['REQUEST_METHOD'] === "POST"  && $data['type'] === "RemoveFriend"){
     $remove_friend = new RemoveFriend($dbc);
     $response = $remove_friend->handleRemoveFriend($data);
 
