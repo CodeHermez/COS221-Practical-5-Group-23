@@ -4,7 +4,7 @@
 //-------------------------------------------------------------------------------------------------------------------------------------
 header('Access-Control-Allow-Origin: *');
 header("Content-Type: application/json");
-header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+header("Access-Control-Allow-Methods: GET, POST, OPTIONS, DELETE");
 header("Allow-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, Access-Control-Allow-Methods");
 
 include_once '../config.php';
