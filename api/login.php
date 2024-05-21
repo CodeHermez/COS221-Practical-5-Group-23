@@ -10,11 +10,11 @@ include_once "../operations.php";
 
 $database = Database::instance();
 $dbc = $database->getConnection();
-$data = json_decode(file_get_contents("php://input"));
+$data = json_decode(file_get_contents("php://input"), true);
 //-------------------------------------------------------------------------------------------------------------------------------------
 
 
-if($_SERVER['REQUEST_METHOD'] === "POST"  && $data->type === "Login"){
+if($_SERVER['REQUEST_METHOD'] === "POST"  && $data['type'] == "Login"){
     $usr_login = new Login($dbc);
     $response =  $usr_login->handleLogin();
 

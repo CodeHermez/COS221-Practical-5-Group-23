@@ -77,7 +77,7 @@ class Register{
             $stmt->bindParam(6, $this->age, PDO::PARAM_INT);
 
             if($stmt->execute()){ 
-                $_SESSION['loggedIn'];
+                $_SESSION['loggedIn'] = true;
                 setcookie('username', $this->username, time() + 3600, '/');
                 // $this->response_code = 200;
                 http_response_code(200);
@@ -608,7 +608,7 @@ class AddReview{
             return createJSONResponse("error", "User is not logged in.");
         } 
 
-        if(!isset($data['mediaID']) ||!isset($data['star_rating'])){    //star rating required?
+        if(!isset($data['mediaID']) ||!isset($data['starRating'])){    //star rating required?
             http_response_code(400);
             return createJSONResponse("error", "Missing parameters.");
         }
@@ -695,7 +695,7 @@ class GetReviews{
                 */
         
             $limit= $data['limit'] ?? 20;  //default
-            $this->username = $_COOKIE['username'];
+            // $this->username = $_COOKIE['username'];
             $query = 'SELECT title, starRating, comments FROM writes
             INNER JOIN content_review cr on writes.reviewID = cr.reviewID
             INNER JOIN entertainment_content ec on cr.mediaID = ec.media_ID
@@ -703,7 +703,7 @@ class GetReviews{
             LIMIT ?';
 
             $stmt = $this->connection->prepare($query);
-            $stmt->bindParam(1, $this->username,  PDO::PARAM_STR);
+            $stmt->bindParam(1, $data['username'],  PDO::PARAM_STR);
             $stmt->bindParam(2, $limit,  PDO::PARAM_INT);
 
             if($stmt->execute()){
@@ -713,7 +713,7 @@ class GetReviews{
                 foreach($resultArr as $row){
                     $response[] = [
                         'title' => $row['title'],
-                        'username' => $row['username'],
+                        'username' => $data['username'],
                         'starRating' => $row['starRating'],
                         'comment' => $row['comments']
                     ];
@@ -750,7 +750,7 @@ class GetReviews{
                 ]
             */
 
-            $this->username = $_COOKIE['username'];
+            $mediaID = $data['mediaID'];
             $limit= $data['limit'] ?? 20;  //default
 
             $query = 'SELECT media_ID,title,username,starRating,comments FROM writes
@@ -760,7 +760,7 @@ class GetReviews{
             LIMIT ?';
 
             $stmt = $this->connection->prepare($query);
-            $stmt->bindParam(1, $this->username,  PDO::PARAM_STR);
+            $stmt->bindParam(1, $mediaID,  PDO::PARAM_STR);
             $stmt->bindParam(2, $limit,  PDO::PARAM_INT);
 
             if($stmt->execute()){

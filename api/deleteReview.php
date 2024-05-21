@@ -10,7 +10,7 @@ include_once "../operations.php";
 
 $database = Database::instance();
 $dbc = $database->getConnection();
-$data = json_decode(file_get_contents("php://input"));
+$data = json_decode(file_get_contents("php://input"), true);
 //-------------------------------------------------------------------------------------------------------------------------------------
 
 

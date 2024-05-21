@@ -11,10 +11,10 @@ include_once "../operations.php";
 
 $database = Database::instance();
 $dbc = $database->getConnection();
-$data = json_decode(file_get_contents("php://input"));
+$data = json_decode(file_get_contents("php://input"), true);
 //-------------------------------------------------------------------------------------------------------------------------------------
 
-if($_SERVER['REQUEST_METHOD'] === "POST"  && $data->type === "AddReview"){
+if($_SERVER['REQUEST_METHOD'] === "POST"  && $data['type'] === "AddReview"){
     $new_review = new AddReview($dbc);
     $response =  $new_review->handleAddReview($data);
 

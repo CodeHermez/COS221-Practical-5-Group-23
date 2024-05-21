@@ -11,12 +11,12 @@ include_once "../operations.php";
 
 $database = Database::instance();
 $dbc = $database->getConnection();
-$data = json_decode(file_get_contents("php://input"));
+$data = json_decode(file_get_contents("php://input"), true);
 //-------------------------------------------------------------------------------------------------------------------------------------
 
-if($_SERVER['REQUEST_METHOD'] === "POST"  && $data->type === "Register"){
+if($_SERVER['REQUEST_METHOD'] === "POST"  && $data['type'] == "Register"){
     $usr_rgst = new Register($dbc);
-    $response =  $usr_rgst->createUser();
+    $response =  $usr_rgst->createUser($data);
 
     header('Content-Type: application/json');
     echo $response;
