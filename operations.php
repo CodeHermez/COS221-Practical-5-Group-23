@@ -200,3 +200,25 @@ class createTitle
         return true;
     }
 }
+
+
+class deleteTitle
+{
+    private $connection;
+    public $media_id;
+    public function __construct($db)
+    {
+        $this->connection = $db;
+    }
+
+    public function deleteTitle()
+    {
+        $query = "DELETE FROM entertainment_content WHERE media_ID = :media_id;";
+        $stmt = $this->connection->prepare($query);
+        $this->media_id = filter_var($this->media_id, FILTER_VALIDATE_INT);
+        $this->media_id = intval(htmlspecialchars(strip_tags($this->media_id)));
+        $stmt->bindParam(":media_id", $this->media_id);
+        $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
+        return $stmt->rowCount() > 0;
+    }
+}
