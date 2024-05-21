@@ -300,8 +300,6 @@ class Register{
 }
 
 class Login{ 
-    //set these variables in your end point
-    //since they are all public
     public $password;
     public $salt;
     private $connection;
@@ -313,7 +311,6 @@ class Login{
     password
     */
 
-    //    constructor takes in the database connection
     public function __construct($db){
         $this->connection = $db;
     }
@@ -324,26 +321,7 @@ class Login{
 
         $requestData = json_decode(file_get_contents('php://input'), true);
 
-        //check if email has been set
-        //check if password has been set
-        // if(empty(trim($requestData["email"]))){
-        //     $info = [
-        //         "status" => $status,
-        //         "data" => "Please provide an email."
-        //     ];
-        //     return $info;
-        // }
-        // if(empty(trim($requestData["password"]))){ 
-        //     // return createJSONResponse('error', "Please provide a password.");
-        //     $info = [
-        //         "status" => $status,
-        //         "data" => "Please provide a password."
-        //     ];
-        //     return $info;
-        // }
-
         $email = $requestData["email"] ?? null;
-        // $this->username = trim($requestData["username"]) ?? null;
         $password = $requestData["password"] ?? null;
 
   
@@ -383,12 +361,11 @@ class Login{
                 $data = "Invalid email or password.";
             }         
         }
-        else{
+        else{ //uhm
             //500?
             // $data = "Something went wrong. Please try again later.";
 
             // http_response_code(500); 
-                // $status = "error"; //400
             $data = $this->connection->error;
         }
 
@@ -503,48 +480,51 @@ class AddReview{  //restricted to a user who is logged in
         $this->starRating = $data['starRating'] ?? null;
         $this->mediaID = $data['mediaID'] ?? null;
 
-        if(!$this->starRating || !$this->mediaID){    //star rating required?
+        if(!$this->starRating && !$this->mediaID){    
             http_response_code(400);
             return createJSONResponse("error", "Missing parameters.");
         }
 
-        // $username = $_COOKIE['username'];
-        // $this->starRating = $data['starRating'];
-        $this->comment = trim($data["comment"]) ?? null; 
-        // $this->mediaID = $data['mediaID'];
+        $this->comment = $data["comment"] ?? null; 
         $this->username = $_COOKIE['username'];
 
-        $query = 'INSERT INTO content_review (comments, starRating, mediaID) VALUES (?, ?, ?)';
-        $stmt = $this->connection->prepare($query);
-        $stmt->bindParam(1, $this->comment,  PDO::PARAM_STR); 
-        $stmt->bindParam(2, $this->starRating, PDO::PARAM_INT);
-        $stmt->bindParam(3, $this->mediaID, PDO::PARAM_INT);
+        try {
+            $query = 'INSERT INTO content_review (comments, starRating, mediaID) VALUES (?, ?, ?)';
+            $stmt = $this->connection->prepare($query);
+            $stmt->bindParam(1, $this->comment,  PDO::PARAM_STR); 
+            $stmt->bindParam(2, $this->starRating, PDO::PARAM_INT);
+            $stmt->bindParam(3, $this->mediaID, PDO::PARAM_INT);
 
-        if(!$stmt->execute()){
+            $stmt->execute();
+
+            //get review ID FROM CONTENT REIVEW
+            $insert_id = $this->connection->lastInsertId();
+
+            $query = 'INSERT INTO writes (reviewID, username) VALUES (?, ?)';
+            $stmt = $this->connection->prepare($query);
+            $stmt->bindParam(1, $insert_id,  PDO::PARAM_INT); 
+            $stmt->bindParam(2, $this->username, PDO::PARAM_STR);
+
+            try {
+                $stmt->execute();
+            } catch (PDOException $e) {
+                
+                //delete the insert into content_review
+                $query2 = 'DELETE FROM content_review WHERE reviewID = ?';
+                $stmt2 = $this->connection->prepare($query2);
+                $stmt2->bindParam(1, $insert_id,  PDO::PARAM_INT);
+                $stmt2->execute();
+                unset($stmt);
+
+                return createJSONResponse("error", $stmt->error);
+            }
+        } catch (PDOException $e) {
+            unset($stmt);
             http_response_code(500);
-            return createJSONResponse("error", $stmt->error);
+            return createJSONResponse("error", "MediaID, {$this->mediaID}, does not exist.");            
         }
 
-        //get review ID FROM CONTENT REIVEW
-        $insert_id = $this->connection->lastInsertId();
-
-        $query = 'INSERT INTO writes (reviewID, username) VALUES (?, ?)';
-        $stmt = $this->connection->prepare($query);
-        $stmt->bindParam(1, $insert_id,  PDO::PARAM_INT); 
-        $stmt->bindParam(2, $this->username, PDO::PARAM_STR);
-
-        if(!$stmt->execute()){
-            //delete the insert into content_review
-            $query2 = 'DELETE FROM content_review WHERE reviewID = ?';
-            $stmt2 = $this->connection->prepare($query2);
-            $stmt2->bindParam(1, $insert_id,  PDO::PARAM_INT);
-            $stmt2->execute();
-
-            return createJSONResponse("error", $stmt->error);
-        }
-
-        unset($stmt);
-
+       
         // $this->code = 200; // OK
         http_response_code(200);
         return createJSONResponse("success", "Added review successfully");
