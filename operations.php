@@ -342,15 +342,17 @@ class Login{
         //     return $info;
         // }
 
-        $email = trim($requestData["email"]) ?? null;
+        $email = $requestData["email"] ?? null;
         // $this->username = trim($requestData["username"]) ?? null;
-        $password = trim($requestData["password"]) ?? null;
+        $password = $requestData["password"] ?? null;
 
+  
         if (!$email || !$password) {
-            http_response_code(400);
-            return createJSONResponse("error", "All fields are required.");
+            return [
+                "status" => $status,
+                "data" => "All fields are required."
+            ];
         }
-
 
         $query = 'SELECT salt, password, username, name FROM user WHERE email=?';
         $stmt = $this->connection->prepare($query);
