@@ -944,6 +944,12 @@ class GetUsers{
     }
 
     public function handleGetUsers($data){
+
+        if(isset($data['username']) && $data['username']!=null){
+            return $this->getUser($data['username']);
+        }
+
+
         $limit = isset($data['limit']) ? (int)$data['limit'] : 20;
         $order = isset($data['order']) ? strtoupper($data['order']) : "ASC";
 
@@ -952,19 +958,51 @@ class GetUsers{
         }
 
         $query = "SELECT name, email, username, age, created_at FROM user ORDER BY name $order LIMIT :limit";
+
         $stmt = $this->connection->prepare($query);
+        
         $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
 
         if($stmt->execute()){
             $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
             unset($stmt);
 
+            foreach($users as $user){
+                $user['age'] = (int) $user['age'];
+            }
+
             http_response_code(200);
             return createJSONResponse("success", $users);
         } else {
+            http_response_code(400);
             return createJSONResponse("error", "Failed to retrieve users.");
         }
 
+    }
+
+    public function getUser($username){
+        $query = "SELECT name, email, username, age, created_at FROM user WHERE username=?";
+        $stmt = $this->connection->prepare($query);
+        $stmt->bindParam(1, $username, PDO::PARAM_STR);
+
+        if($stmt->execute()){
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+            if($user==false){
+                unset($stmt);
+                http_response_code(400);
+                return createJSONResponse("error", "User, {$username}, does not exist.");
+            }
+            unset($stmt);
+
+
+            $user['age'] = (int) $user['age'];
+
+            http_response_code(200);
+            return createJSONResponse("success", [$user]);
+        } else {
+            http_response_code(400);
+            return createJSONResponse("error", "Failed to retrieve user.");
+        }
     }
 
 }
