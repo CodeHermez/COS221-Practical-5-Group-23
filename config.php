@@ -31,7 +31,7 @@ class Database
     // wheately database name
 //    private $db_name = "HOOT_MOVIES";
 // localhost database name
-    private $db_name = "auction";
+    private $db_name = "hoopdatabase";
 
     private $connection;
     private function __construct()
