@@ -223,42 +223,45 @@ class deleteTitle
     }
 }
 
-//class ADDUSERGENRE
-//{
-//    private $connection;
-//    public $genre;
-//    public $username;
-//    public function __construct($db)
-//    {
-//        $this->connection = $db;
-//    }
-//
-//    public function addGenre()
-//    {
-//        $query = "SELECT genreID FROM genre WHERE genreName = :genre;";
-//        $stmt = $this->connection->prepare($query);
-//        $stmt->bindParam(":genre", $this->genre);
-//        $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
-//        if($stmt->rowCount() == 0)
-//        {
-//            $query = "INSERT INTO genre (genreName) VALUES (:genre);";
-//            $stmt = $this->connection->prepare($query);
-//            $stmt->bindParam(":genre", $this->genre);
-//            $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
-//        }
-//        else
-//        {
-//            $r = $stmt->fetch(PDO::FETCH_ASSOC);
-//            $genre_id = $r["genreID"];
-//            $query2 = "INSERT INTO user_genre (genreID, username) VALUES (:genreID, :username);";
-//            $stmt2 = $this->connection->prepare($query2);
-//            $stmt2->bindParam(":genreID", $genre_id);
-//            $stmt2->bindParam(":username", $this->username);
-//            $stmt2->execute() or die("Error: " . $stmt2->errorInfo()[2]);
-//        }
-//        return true;
-//    }
-//}
+class addUserGenre
+{
+    private $connection;
+    public $genreName;
+    public $username;
+    public function __construct($db)
+    {
+        $this->connection = $db;
+    }
+
+    public function addGenre()
+    {
+        $query = "SELECT genreID FROM genre WHERE genreName = ?;";
+        $stmt = $this->connection->prepare($query);
+        $stmt->bindParam(1, $this->genreName);
+        $check = $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
+        $genreID = null;
+        if($stmt->rowCount() > 0)
+        {
+            $r = $stmt->fetch(PDO::FETCH_ASSOC);
+            $genreID = $r["genreID"];
+        }
+        else
+        {
+            return false;
+        }
+
+        if($genreID === null)
+            return false;
+
+        $query = "INSERT INTO favourite_genre (username, genreID) VALUES (:username,:genreID)";
+        $stmt = $this->connection->prepare($query);
+        $stmt->username = filter_var($this->username, FILTER_SANITIZE_STRING);
+        $stmt->bindParam(":username", $this->username);
+        $stmt->bindParam(":genreID", $genreID);
+        $check = $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
+        return $check;
+    }
+}
 
 
 //class getRecommendations
@@ -351,4 +354,214 @@ class addWishlist
         $check = $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
         return $check;
     }
+}
+
+
+class getTitle
+{
+    private $connection;
+    private $query;
+    public $limit;
+    public $sort;
+    public $order;
+    public $search;
+    public $return;
+
+
+
+
+    public $search_media_id, $search_title, $search_genre, $search_rating, $search_content_rating, $search_release_date, $search_type, $search_cast, $search_director, $search_writer;
+
+
+    public function __construct($db)
+    {
+        $this->connection = $db;
+    }
+
+
+
+
+
+    public function Return_Parameters()
+    {
+        if($this->return === "*")
+        {
+            $this->query = "SELECT * FROM( SELECT e.media_ID, title, release_Date, description, content_rating, rating, GROUP_CONCAT(DISTINCT g.genreName) AS Genre, GROUP_CONCAT(DISTINCT CASE WHEN c.role = \'actor\' THEN c.name END) AS CAST, GROUP_CONCAT(DISTINCT CASE WHEN c.role = \'director\' THEN c.name END) AS DIRECTOR, GROUP_CONCAT(DISTINCT CASE WHEN c.role = \'writer\' THEN c.name END) AS WRITER FROM belongs AS b INNER JOIN entertainment_content AS e ON e.media_ID = b.media_ID LEFT JOIN genre AS g ON g.genreID = b.genreID INNER JOIN hoopdatabase.involved_in i on e.media_ID = i.media_ID LEFT JOIN hoopdatabase.crew c on i.crewID = c.crewID GROUP BY e.media_ID, i.media_ID ) AS list";
+        }
+        else
+        {
+            $this->query .= "SELECT ";
+            $this->query .= join(", ", $this->return);
+            $this->query .= " FROM(
+    SELECT e.media_ID, title, release_Date, description, content_rating, rating,
+           GROUP_CONCAT(DISTINCT g.genreName) AS Genre,
+           GROUP_CONCAT(DISTINCT CASE WHEN c.role = 'actor' THEN c.name END) AS CAST,
+           GROUP_CONCAT(DISTINCT CASE WHEN c.role = 'director' THEN c.name END) AS DIRECTOR,
+           GROUP_CONCAT(DISTINCT CASE WHEN c.role = 'writer' THEN c.name END) AS WRITER
+    FROM belongs AS b
+    INNER JOIN entertainment_content AS e ON e.media_ID = b.media_ID
+    LEFT JOIN genre AS g ON g.genreID = b.genreID
+    INNER JOIN hoopdatabase.involved_in i on e.media_ID = i.media_ID
+    LEFT JOIN hoopdatabase.crew c on i.crewID = c.crewID
+    GROUP BY e.media_ID, i.media_ID
+) AS list ";
+        }
+    }
+
+
+
+    public function getTitle()
+    {
+        $query = "SELECT * FROM entertainment_content WHERE title = :title;";
+        $stmt = $this->connection->prepare($query);
+        $this->title = filter_var($this->title, FILTER_SANITIZE_STRING);
+        $this->title = htmlspecialchars(strip_tags($this->title));
+        $stmt->bindParam(":title", $this->title);
+        $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
+        return $stmt;
+    }
+
+
+
+    public function executeQuery()
+    {
+        echo($this->query);
+        $stmt = $this->connection->prepare($this->query);
+
+        $this->limit = filter_var($this->limit, FILTER_VALIDATE_INT);
+        $this->limit = intval(htmlspecialchars(strip_tags($this->limit)));
+        $this->sort = filter_var($this->sort, FILTER_SANITIZE_STRING);
+        $this->sort = htmlspecialchars(strip_tags($this->sort));
+        $this->order = filter_var($this->order, FILTER_SANITIZE_STRING);
+        $this->order = htmlspecialchars(strip_tags($this->order));
+        $this->search = filter_var($this->search, FILTER_SANITIZE_STRING);
+        $this->search = htmlspecialchars(strip_tags($this->search));
+        $this->search_title = filter_var($this->search_title, FILTER_SANITIZE_STRING);
+        $this->search_title = htmlspecialchars(strip_tags($this->search_title));
+        $this->search_genre = filter_var($this->search_genre, FILTER_SANITIZE_STRING);
+        $this->search_genre = htmlspecialchars(strip_tags($this->search_genre));
+        $this->search_rating = filter_var($this->search_rating, FILTER_VALIDATE_INT);
+        $this->search_rating = intval(htmlspecialchars(strip_tags($this->search_rating)));
+        $this->search_content_rating = filter_var($this->search_content_rating, FILTER_SANITIZE_STRING);
+        $this->search_content_rating = htmlspecialchars(strip_tags($this->search_content_rating));
+        $this->search_release_date = filter_var($this->search_release_date, FILTER_VALIDATE_INT);
+        $this->search_release_date = intval(htmlspecialchars(strip_tags($this->search_release_date)));
+        $this->search_type = filter_var($this->search_type, FILTER_SANITIZE_STRING);
+        $this->search_type = htmlspecialchars(strip_tags($this->search_type));
+        $this->search_cast = filter_var($this->search_cast, FILTER_SANITIZE_STRING);
+        $this->search_cast = htmlspecialchars(strip_tags($this->search_cast));
+        $this->search_director = filter_var($this->search_director, FILTER_SANITIZE_STRING);
+        $this->search_director = htmlspecialchars(strip_tags($this->search_director));
+        $this->search_writer = filter_var($this->search_writer, FILTER_SANITIZE_STRING);
+        $this->search_writer = htmlspecialchars(strip_tags($this->search_writer));
+        $this->search_media_id = filter_var($this->search_media_id, FILTER_VALIDATE_INT);
+        $this->search_media_id = intval(htmlspecialchars(strip_tags($this->search_media_id)));
+
+//        echo($this->return);
+//        echo ($this->limit);
+//        echo ($this->sort);
+//        echo($this->order);
+//        echo($this->search_content_rating);
+//        echo($this->search_release_date);
+
+
+        $stmt->bindParam(":limit", $this->limit);
+        $stmt->bindParam(":sort", $this->sort);
+        $stmt->bindParam(":order", $this->order);
+        $stmt->bindParam(":search_title", $this->search_title);
+        $stmt->bindParam(":search_genre", $this->search_genre);
+        $stmt->bindParam(":search_rating", $this->search_rating);
+        $stmt->bindParam(":search_content_rating", $this->search_content_rating);
+        $stmt->bindParam(":search_release_date", $this->search_release_date);
+        $stmt->bindParam(":search_type", $this->search_type);
+        $stmt->bindParam(":search_cast", $this->search_cast);
+        $stmt->bindParam(":search_director", $this->search_director);
+        $stmt->bindParam(":search_writer", $this->search_writer);
+        $stmt->bindParam(":search_media_id", $this->search_media_id);
+
+        $stmt->execute();
+        return $stmt;
+    }
+
+    public function Where()
+    {
+        $this->query .= " WHERE ";
+    }
+
+    public function And()
+    {
+        $this->query .= " AND ";
+    }
+
+    public function Search_title()
+    {
+        $this->query .= " title = :search_title ";
+    }
+
+    public function Search_genre()
+    {
+        $this->query .= " Genre = '%:search_genre%' ";
+    }
+
+    public function Search_cast()
+    {
+        $this->query .= " CAST = '%:search_cast%' ";
+    }
+
+    public function Search_media_id()
+    {
+        $this->query .= " media_ID = :search_media_id ";
+    }
+
+    public function Search_director()
+    {
+        $this->query .= " DIRECTOR = '%:search_director%' ";
+    }
+
+    public function Search_writer()
+    {
+        $this->query .= " WRITER = '%:search_writer%' ";
+    }
+
+    public function Search_rating()
+    {
+        $this->query .= " rating = :search_rating ";
+    }
+
+    public function Search_content_rating()
+    {
+        $this->query .= " content_rating = :search_content_rating ";
+    }
+
+    public function Search_release_date()
+    {
+        $this->query .= " release_date = :search_release_date ";
+    }
+
+    public function Search_type()
+    {
+        $this->query .= " type = :search_type ";
+    }
+
+    public function Limit()
+    {
+        $this->query .= " LIMIT :limit ";
+    }
+
+    public function Sort()
+    {
+        $this->query .= " ORDER BY :sort ";
+    }
+
+    public function SortAndOrder()
+    {
+        $this->query .= " ORDER BY : sort :order ";
+    }
+
+
+    public function closeQuery()
+    {
+        $this->query .= ";";
+    }
+
 }
