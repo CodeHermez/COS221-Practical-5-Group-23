@@ -35,7 +35,7 @@ Meet team behind the Hoop Streaming Platform:
     - Role: Backend Dev
     - GitHub: itsyaboijeff01
 1. ***Onthatile Molebaloa***
-    - Student Number: 23236789
+    - Student Number: 22659812
     - Role: Frontend Specialist
     - GitHub: ThatiMX
 1. ***Lwando Msindo***
@@ -47,7 +47,7 @@ Meet team behind the Hoop Streaming Platform:
     - Role: Database Dev
     - GitHub: BridgetNkosi
 1. ***Retshepile Nkwana***
-    - Student Number: 23239012
+    - Student Number: 23580578
     - Role: Frontend Dev
     - GitHub: rets_nkwana
 1. ***Bob Dlamini***
