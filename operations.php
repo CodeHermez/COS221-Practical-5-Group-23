@@ -222,3 +222,133 @@ class deleteTitle
         return $stmt->rowCount() > 0;
     }
 }
+
+//class ADDUSERGENRE
+//{
+//    private $connection;
+//    public $genre;
+//    public $username;
+//    public function __construct($db)
+//    {
+//        $this->connection = $db;
+//    }
+//
+//    public function addGenre()
+//    {
+//        $query = "SELECT genreID FROM genre WHERE genreName = :genre;";
+//        $stmt = $this->connection->prepare($query);
+//        $stmt->bindParam(":genre", $this->genre);
+//        $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
+//        if($stmt->rowCount() == 0)
+//        {
+//            $query = "INSERT INTO genre (genreName) VALUES (:genre);";
+//            $stmt = $this->connection->prepare($query);
+//            $stmt->bindParam(":genre", $this->genre);
+//            $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
+//        }
+//        else
+//        {
+//            $r = $stmt->fetch(PDO::FETCH_ASSOC);
+//            $genre_id = $r["genreID"];
+//            $query2 = "INSERT INTO user_genre (genreID, username) VALUES (:genreID, :username);";
+//            $stmt2 = $this->connection->prepare($query2);
+//            $stmt2->bindParam(":genreID", $genre_id);
+//            $stmt2->bindParam(":username", $this->username);
+//            $stmt2->execute() or die("Error: " . $stmt2->errorInfo()[2]);
+//        }
+//        return true;
+//    }
+//}
+
+
+//class getRecommendations
+//{
+//    private $connection;
+//    public $username;
+//    public function __construct($db)
+//    {
+//        $this->connection = $db;
+//    }
+//
+//    public function getRecommendations()
+//    {
+//        $query = "SELECT genreID FROM user_genre WHERE username = :username;";
+//        $stmt = $this->connection->prepare($query);
+//        $stmt->bindParam(":username", $this->username);
+//        $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
+//        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+//        $genre_ids = array();
+//        foreach($result as $r)
+//        {
+//            $genre_ids[] = $r["genreID"];
+//        }
+//        $query = "SELECT media_ID FROM belongs WHERE genreID IN (".implode(",", $genre_ids).");";
+//        $stmt = $this->connection->prepare($query);
+//        $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
+//        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+//        $media_ids = array();
+//        foreach($result as $r)
+//        {
+//            $media_ids[] = $r["media_ID"];
+//        }
+//        $query = "SELECT title FROM entertainment_content WHERE media_ID IN (".implode(",", $media_ids).");";
+//        $stmt = $this->connection->prepare($query);
+//        $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
+//        return $stmt;
+//    }
+//}
+
+
+class addWishlist
+{
+    private $connection;
+    public $media_id;
+    public $username;
+    public $title;
+    public function __construct($db)
+    {
+        $this->connection = $db;
+    }
+
+    public function addWishlistWithMediaID()
+    {
+        $query = "INSERT INTO wants_to_watch (username, mediaID) VALUES (:username,:media_id);";
+        $stmt = $this->connection->prepare($query);
+        $this->media_id = filter_var($this->media_id, FILTER_VALIDATE_INT);
+        $this->media_id = intval(htmlspecialchars(strip_tags($this->media_id)));
+        $this->username = filter_var($this->username, FILTER_SANITIZE_STRING);
+        $this->username = htmlspecialchars(strip_tags($this->username));
+
+        $stmt->bindParam(":media_id", $this->media_id);
+        $stmt->bindParam(":username", $this->username);
+        $check = $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
+        return $check;
+    }
+
+    public function addWishlistWithoutMediaID()
+    {
+        $query = "SELECT media_ID FROM entertainment_content WHERE title = :title;";
+        $stmt = $this->connection->prepare($query);
+        $this->title = filter_var($this->title, FILTER_SANITIZE_STRING);
+        $this->title = htmlspecialchars(strip_tags($this->title));
+        $stmt->bindParam(":title", $this->title);
+        $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
+        $r = $stmt->fetch(PDO::FETCH_ASSOC);
+        if(isset($r["media_ID"]))
+            $this->media_id = $r["media_ID"];
+        else
+            return false;
+
+//        echo($this->media_id . " " . $this->username);
+        $query = "INSERT INTO wants_to_watch (username, mediaID) VALUES (:username,:media_id);";
+        $stmt = $this->connection->prepare($query);
+        $this->media_id = filter_var($this->media_id, FILTER_VALIDATE_INT);
+        $this->media_id = intval(htmlspecialchars(strip_tags($this->media_id)));
+        $this->username = filter_var($this->username, FILTER_SANITIZE_STRING);
+        $this->username = htmlspecialchars(strip_tags($this->username));
+        $stmt->bindParam(":username", $this->username);
+        $stmt->bindParam(":media_id", $this->media_id);
+        $check = $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
+        return $check;
+    }
+}
