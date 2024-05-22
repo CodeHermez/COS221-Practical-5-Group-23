@@ -29,7 +29,7 @@ CREATE TABLE `favourite_genre` (
   KEY `genreID` (`genreID`),
   CONSTRAINT `favourite_genre_ibfk_1` FOREIGN KEY (`username`) REFERENCES `user` (`username`) ON DELETE CASCADE,
   CONSTRAINT `favourite_genre_ibfk_2` FOREIGN KEY (`genreID`) REFERENCES `genre` (`genreID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
