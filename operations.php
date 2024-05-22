@@ -264,42 +264,37 @@ class addUserGenre
 }
 
 
-//class getRecommendations
-//{
-//    private $connection;
-//    public $username;
-//    public function __construct($db)
-//    {
-//        $this->connection = $db;
-//    }
-//
-//    public function getRecommendations()
-//    {
-//        $query = "SELECT genreID FROM user_genre WHERE username = :username;";
-//        $stmt = $this->connection->prepare($query);
-//        $stmt->bindParam(":username", $this->username);
-//        $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
-//        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-//        $genre_ids = array();
-//        foreach($result as $r)
-//        {
-//            $genre_ids[] = $r["genreID"];
-//        }
-//        $query = "SELECT media_ID FROM belongs WHERE genreID IN (".implode(",", $genre_ids).");";
-//        $stmt = $this->connection->prepare($query);
-//        $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
-//        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-//        $media_ids = array();
-//        foreach($result as $r)
-//        {
-//            $media_ids[] = $r["media_ID"];
-//        }
-//        $query = "SELECT title FROM entertainment_content WHERE media_ID IN (".implode(",", $media_ids).");";
-//        $stmt = $this->connection->prepare($query);
-//        $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
-//        return $stmt;
-//    }
-//}
+class getRecommendations
+{
+    private $connection;
+    public $username;
+    public function __construct($db)
+    {
+        $this->connection = $db;
+    }
+
+    public function getRecommendations()
+    {
+        $query = "SELECT title,GROUP_CONCAT(genreName) AS genre, release_Date, description, content_rating, rating  FROM entertainment_content
+                    INNER JOIN belongs ON entertainment_content.media_ID = belongs.media_ID
+                    LEFT JOIN genre ON belongs.genreID = genre.genreID
+                    WHERE genre.genreID IN (
+                        SELECT genreID FROM favourite_genre
+                        INNER JOIN user on favourite_genre.username = user.username
+                        WHERE user.username = ?
+                        )
+                    GROUP BY entertainment_content.media_ID
+                    HAVING COUNT(belongs.media_ID) > 1
+                    ORDER BY COUNT(belongs.media_ID) DESC;";
+        $stmt = $this->connection->prepare($query);
+        $stmt->bindParam(1, $this->username);
+        $check = $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
+        if($check)
+            return $stmt;
+        else
+            return false;
+    }
+}
 
 
 class addWishlist
