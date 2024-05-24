@@ -24,6 +24,7 @@ class Database{
 // localhost database name
     private $db_name = "hoop";
 
+
     private $connection;
     private function __construct()
     {
