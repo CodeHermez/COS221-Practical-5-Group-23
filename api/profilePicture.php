@@ -1,8 +1,7 @@
 <?php
-// error_reporting(E_ALL); ini_set('display_errors', 1);
 header('Access-Control-Allow-Origin: *');
 header("Content-Type: application/json");
-header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+header("Access-Control-Allow-Methods: PATCH, OPTIONS");
 header("Allow-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, Access-Control-Allow-Methods");
 
 include_once '../config.php';
@@ -13,10 +12,17 @@ $dbc = $database->getConnection();
 $data = json_decode(file_get_contents("php://input"), true);
 //-------------------------------------------------------------------------------------------------------------------------------------
 
+if($_SERVER['REQUEST_METHOD'] === "PATCH"){
+   
+    if (!isset($data['profile_picture'])) {
+        http_response_code(400);
+        echo json_encode(["status" => "error", "message" => "Missing parameter"]);
+        return;
+    }
 
-if($_SERVER['REQUEST_METHOD'] === "POST"){
-    $usr_login = new Login($dbc);
-    $response =  $usr_login->handleLogin();
+
+    $patchProfile = new ChangeProfilePicture($dbc);
+    $response = $patchProfile->changeProfile($data);
 
     header('Content-Type: application/json');
     echo $response;

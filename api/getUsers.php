@@ -1,5 +1,4 @@
 <?php
-// error_reporting(E_ALL); ini_set('display_errors', 1);
 header('Access-Control-Allow-Origin: *');
 header("Content-Type: application/json");
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
@@ -13,11 +12,10 @@ $dbc = $database->getConnection();
 $data = json_decode(file_get_contents("php://input"), true);
 //-------------------------------------------------------------------------------------------------------------------------------------
 
-
 if($_SERVER['REQUEST_METHOD'] === "POST"){
-    $usr_login = new Login($dbc);
-    $response =  $usr_login->handleLogin();
-
+    $user = new GetUsers($dbc);
+    $response = $user->handleGetUsers($data);
+    
     header('Content-Type: application/json');
     echo $response;
 }
