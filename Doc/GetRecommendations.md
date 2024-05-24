@@ -22,15 +22,15 @@ aining the response.
 
 - `status` (string): Status of the request, either "success" or "error".
 
-- `timestamp` (integer): The time in at which the request was made.
+- `timestamp` (integer): The time at which the request was made.
 
-- `data` (Array<JSON>): If successful, contains the requested user recommendation data in array form of json object elemets.
+- `data` (Array<JSON>): If successful, contains the requested user recommendation data in array form of JSON object elements.
   
   - `title` (string): The title of the title you want to retrieve
   
   - `genre` (string): the string of genres associated with the title
   
-  - `release_date` (integer): The year at which the title was release
+  - `release_date` (integer): The year in which the title was released
   
   - `description` (string): The description of the title
   
