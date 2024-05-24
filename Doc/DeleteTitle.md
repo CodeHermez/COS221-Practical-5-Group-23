@@ -14,15 +14,15 @@ This function handles a DELETE request to remove a title for an administrator.
 
 ### Parameters (if a parameter has an asterisk{*} next to it, it means this key is required)
 
-- *`media_id` (Number): The id of the title you would like to delete
+- *`media_id` (integer): The id of the title you would like to delete
 
 ### Returns
 
 - `status` (string): Status of the request, either "success" or "error".
 
-- `timestamp` (integer): The time in at which the request was made.
+- `timestamp` (integer): The time at which the request was made.
 
-- `data` (string): If successful, contains the requested user data. If an error was occur, contains the request error description.
+- `data` (string): If successful, contains the requested user data. If an error occurs, it contains the request error description.
 
 ### Example Request (personal)
 
