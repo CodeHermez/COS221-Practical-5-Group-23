@@ -12,9 +12,10 @@ $dbc = $database->getConnection();
 $data = json_decode(file_get_contents("php://input"), true);
 //-------------------------------------------------------------------------------------------------------------------------------------
 
-if($_SERVER['REQUEST_METHOD'] === "POST"  && $data['type'] === "GetFriends"){
+if($_SERVER['REQUEST_METHOD'] === "GET" && $_GET['type'] === "GetFriends"){
+    $username = $_GET['username'] ?? '';
     $get_friends = new GetFriends($dbc);
-    $response = $get_friends->handleGetFriends($data);
+    $response = $get_friends->handleGetFriends($username);
 
     header('Content-Type: application/json');
     echo $response;

@@ -1,5 +1,5 @@
 <?php
-error_reporting(E_ALL); ini_set('display_errors', 1);
+// error_reporting(E_ALL); ini_set('display_errors', 1);
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
@@ -185,9 +185,9 @@ class Register{ //user input
 
         switch($varType){
             case 'age':
-                if(trim($var) < 0){
+                if($var < 13){
                     $valid = false;
-                    $errMsg = "Age must be a positive integer.";
+                    $errMsg = "User must be at least 13 years old.";
                 } 
                 break;
 
@@ -510,9 +510,8 @@ class AddReview{  //restricted to a user who is logged in
     }
 }
 
-class GetReviews{  //no restrictoins //add filter and sort for star rating //get
+class GetReviews{  //no restrictoins 
     /* username
-    
     mediaID*/
     private $connection;
     private $username;
@@ -523,7 +522,7 @@ class GetReviews{  //no restrictoins //add filter and sort for star rating //get
 
     public function handleGetReviews($data){
 
-        if(!isset($data['username']) && !isset($data['mediaID'])){  //at least one must be initialised
+        if((!isset($data['username']) || $data['username']==null) && (!isset($data['mediaID']) || $data['mediaID']==null)){  
             //error
             http_response_code(400);
             return createJSONResponse("error", "Missing parameters.");
@@ -717,8 +716,8 @@ class GetFriends{ //get request
         $this->connection = $db;
     }
 
-    public function handleGetFriends($data){
-        if(!isset($data['username'])){
+    public function handleGetFriends($username){
+        if(!isset($username) || $username==null){
             http_response_code(400);
             return createJSONResponse("error", "Missing username.");
         }
@@ -726,7 +725,7 @@ class GetFriends{ //get request
         try {
             $query = 'SELECT friendID FROM friend WHERE username=?';
             $stmt = $this->connection->prepare($query);
-            $stmt->bindParam(1, $data['username'],  PDO::PARAM_STR);
+            $stmt->bindParam(1, $username,  PDO::PARAM_STR);
 
             if($stmt->execute()){
                 $resultArr = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -866,9 +865,6 @@ class GetUsers{ //change to get
     }
 
     public function handleGetUsers($data){
-
-
-
         if(isset($data['username']) && $data['username']!=null){
             return $this->getUser($data['username']);
         }
