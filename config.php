@@ -22,7 +22,7 @@ class Database{
     // wheately database name
 //    private $db_name = "HOOT_MOVIES";
 // localhost database name
-    private $db_name = "hoopDatabase";
+    private $db_name = "hoop";
 
     private $connection;
     private function __construct()
