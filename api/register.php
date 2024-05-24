@@ -1,5 +1,5 @@
 <?php
-error_reporting(E_ALL); ini_set('display_errors', 1);
+// error_reporting(E_ALL); ini_set('display_errors', 1);
 
 header('Access-Control-Allow-Origin: *');
 header("Content-Type: application/json");
@@ -14,7 +14,7 @@ $dbc = $database->getConnection();
 $data = json_decode(file_get_contents("php://input"), true);
 //-------------------------------------------------------------------------------------------------------------------------------------
 
-if($_SERVER['REQUEST_METHOD'] === "POST"  && $data['type']){
+if($_SERVER['REQUEST_METHOD'] === "POST"){
     $usr_rgst = new Register($dbc);
     $response =  $usr_rgst->createUser($data);
 
