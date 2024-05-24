@@ -395,7 +395,10 @@ class Login{ //user input
                 $_SESSION['username'] = $this->username;
                 session_regenerate_id(true);
                 $status = "success";
-                $data = (int) $this->profilePic;
+                $data = [
+                    "username" => $this->username,
+                    "profile_picture" => (int) $this->profilePic
+                ];
                 http_response_code(200);
             }
             else{      
@@ -988,7 +991,7 @@ class ChangeProfilePicture{
 }
 
 
-}
+
 
 class createTitle
 {
