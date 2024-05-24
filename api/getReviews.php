@@ -12,7 +12,7 @@ $dbc = $database->getConnection();
 $data = json_decode(file_get_contents("php://input"), true);
 //-------------------------------------------------------------------------------------------------------------------------------------
 
-if($_SERVER['REQUEST_METHOD'] === "POST"  && $data['type'] === "GetReviews"){
+if($_SERVER['REQUEST_METHOD'] === "POST"){
     $get_reviews = new GetReviews($dbc);
     $response = $get_reviews->handleGetReviews($data);
     

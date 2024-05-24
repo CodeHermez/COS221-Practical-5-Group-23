@@ -12,7 +12,7 @@ $dbc = $database->getConnection();
 $data = json_decode(file_get_contents("php://input"), true);
 //-------------------------------------------------------------------------------------------------------------------------------------
 
-if($_SERVER['REQUEST_METHOD'] === "POST"  && $data['type'] === "GetUsers"){
+if($_SERVER['REQUEST_METHOD'] === "POST"){
     $user = new GetUsers($dbc);
     $response = $user->handleGetUsers($data);
     

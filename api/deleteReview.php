@@ -14,7 +14,7 @@ $data = json_decode(file_get_contents("php://input"), true);
 //-------------------------------------------------------------------------------------------------------------------------------------
 
 
-if($_SERVER['REQUEST_METHOD'] === "POST"  && $data['type'] === "DeleteReview"){
+if($_SERVER['REQUEST_METHOD'] === "POST"){
     $remove_review = new DeleteReview($dbc);
     $response =  $remove_review->handleDeleteReview($data);
 

@@ -14,7 +14,7 @@ $data = json_decode(file_get_contents("php://input"), true);
 //-------------------------------------------------------------------------------------------------------------------------------------
 
 
-if($_SERVER['REQUEST_METHOD'] === "POST"  && $data['type'] == "Login"){
+if($_SERVER['REQUEST_METHOD'] === "POST"){
     $usr_login = new Login($dbc);
     $response =  $usr_login->handleLogin();
 

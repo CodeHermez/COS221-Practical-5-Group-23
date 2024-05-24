@@ -14,7 +14,7 @@ $dbc = $database->getConnection();
 $data = json_decode(file_get_contents("php://input"), true);
 //-------------------------------------------------------------------------------------------------------------------------------------
 
-if($_SERVER['REQUEST_METHOD'] === "POST"  && $data['type'] == "AddReview"){
+if($_SERVER['REQUEST_METHOD'] === "POST"){
     $new_review = new AddReview($dbc);
     $response =  $new_review->handleAddReview($data);
 
