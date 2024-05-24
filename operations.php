@@ -306,6 +306,7 @@ class Login{ //user input
     public $salt;
     private $connection;
     private $username;
+    private $profilePic;
 
     /*email
     password
@@ -332,7 +333,7 @@ class Login{ //user input
             ];
         }
 
-        $query = 'SELECT salt, password, username, name FROM user WHERE email=?';
+        $query = 'SELECT salt, password, username, profile_picture, name FROM user WHERE email=?';
         $stmt = $this->connection->prepare($query);
         $stmt->bindParam(1, $email,  PDO::PARAM_STR);
         
@@ -347,6 +348,7 @@ class Login{ //user input
 
                 if($dbPassword==$hashedPassword){
                     $this->username = $results['username'];
+                    $this->profilePic = $results['profile_picture'];
                     $status = true;
                 }
                 else{
@@ -391,7 +393,7 @@ class Login{ //user input
                 $_SESSION['username'] = $this->username;
                 session_regenerate_id(true);
                 $status = "success";
-                $data = "Login successful.";
+                $data = (int) $this->profilePic;
                 http_response_code(200);
             }
             else{      
@@ -531,10 +533,12 @@ class GetReviews{  //no restrictoins
         if(isset($data['username'])){
             $limit= $data['limit'] ?? 20;  //default
 
-            $query = 'SELECT writes.reviewID as reviewID, title, mediaID, starRating, comments FROM writes
-            INNER JOIN content_review cr on writes.reviewID = cr.reviewID
-            INNER JOIN entertainment_content ec on cr.mediaID = ec.media_ID
-            WHERE username = ? LIMIT ?';
+            $query = 'SELECT writes.reviewID as reviewID, title, mediaID, starRating, comments, user.profile_picture as profile_picture FROM writes
+            INNER JOIN user ON writes.username = user.username
+            INNER JOIN content_review on writes.reviewID = content_review.reviewID
+            INNER JOIN entertainment_content on content_review.mediaID = entertainment_content.media_ID
+            WHERE user.username = ? LIMIT ?';
+
 
             $stmt = $this->connection->prepare($query);
             $stmt->bindParam(1, $data['username'],  PDO::PARAM_STR);
@@ -548,10 +552,13 @@ class GetReviews{  //no restrictoins
                     return createJSONResponse("error", "User, {$data['username']}, has not written any reviews.");
                 }
 
+
+
                 $response = []; //if this is returned then the user has no comments? 
                 foreach($resultArr as $row){
                     $response[] = [
                         'username' => $data['username'],
+                        'profile_picture' => (int) $row['profile_picture'],
                         'title' => $row['title'],
                         'mediaID' => (int) $row['mediaID'],
                         'reviewID' => (int) $row['reviewID'],
@@ -583,7 +590,8 @@ class GetReviews{  //no restrictoins
             $mediaID = $data['mediaID'];
             $limit= $data['limit'] ?? 20;  //default
 
-            $query = 'SELECT writes.reviewID as reviewID, mediaID,title,username,starRating,comments FROM writes
+            $query = 'SELECT writes.reviewID as reviewID, mediaID,title, writes.username as username, starRating, comments, user.profile_picture as profile_picture FROM writes
+            INNER JOIN user on writes.username = user.username
             INNER JOIN content_review cr on writes.reviewID = cr.reviewID
             INNER JOIN entertainment_content ec on cr.mediaID = ec.media_ID
             WHERE mediaID = ?
@@ -593,32 +601,44 @@ class GetReviews{  //no restrictoins
             $stmt->bindParam(1, $mediaID,  PDO::PARAM_STR);
             $stmt->bindParam(2, $limit,  PDO::PARAM_INT);
 
-            if($stmt->execute()){
-                $resultArr = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            try {
+                //code...
+                if($stmt->execute()){
+                    $resultArr = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-                if(count($resultArr)==0){
+                    if(count($resultArr)==0){
+                        unset($stmt);
+                        return createJSONResponse("error", "No reviews for media with the ID = {$mediaID}.");
+                    }
+
+                    foreach($resultArr as $row){
+                        $response[] = [
+                            'username' => $row['username'],
+                            'profile_picture' => (int) $row['profile_picture'],
+                            'title' => $row['title'],
+                            'mediaID' => (int) $row['mediaID'],
+                            'reviewID' => (int) $row['reviewID'],
+                            'starRating' => (float) $row['starRating'],
+                            'comment' => $row['comments']
+                        ];
+                    }
+
                     unset($stmt);
-                    return createJSONResponse("error", "No reviews for media with the ID = {$mediaID}.");
+                    http_response_code(200);
+                    return createJSONResponse("success", $response);
+                }else{
+                    unset($stmt);
+                    http_response_code(500);
+                    createJSONResponse("error", $this->connection->error);
                 }
-
-                foreach($resultArr as $row){
-                    $response[] = [
-                        'username' => $row['username'],
-                        'title' => $row['title'],
-                        'mediaID' => (int) $row['mediaID'],
-                        'reviewID' => (int) $row['reviewID'],
-                        'starRating' => (float) $row['starRating'],
-                        'comment' => $row['comments']
-                    ];
-                }
-                unset($stmt);
-                http_response_code(200);
-                return createJSONResponse("success", $response);
-            }else{
+                
+            } catch (PDOException $e) {
                 unset($stmt);
                 http_response_code(500);
-                createJSONResponse("error", $this->connection->error);
+                return createJSONResponse("error", $e->getMessage());
             }
+                
+            
         }
     }
 }
@@ -723,7 +743,9 @@ class GetFriends{ //get request
         }
 
         try {
-            $query = 'SELECT friendID FROM friend WHERE username=?';
+            $query = 'SELECT friendID, user.profile_picture as profile_picture FROM friend 
+                    INNER JOIN user ON friend.username = user.username 
+                    WHERE user.username=?';
             $stmt = $this->connection->prepare($query);
             $stmt->bindParam(1, $username,  PDO::PARAM_STR);
 
@@ -733,7 +755,8 @@ class GetFriends{ //get request
                 $response = [];
                 foreach($resultArr as $row){
                     $response[] = [
-                        'friendID' => $row['friendID']
+                        'friendID' => $row['friendID'],
+                        'profile_picture' => (int) $row['profile_picture']
                     ];
                 }
                 unset($stmt);
@@ -876,7 +899,7 @@ class GetUsers{ //change to get
             $order = "ASC";
         }
 
-        $query = "SELECT name, email, username, age, created_at FROM user ORDER BY name $order LIMIT :limit";
+        $query = "SELECT name, email, username, age, profile_picture, created_at FROM user ORDER BY name $order LIMIT :limit";
 
         $stmt = $this->connection->prepare($query);
         
@@ -894,6 +917,7 @@ class GetUsers{ //change to get
                         'email' => $user['email'],
                         'username' => $user['username'],
                         'age' => (int) $user['age'],
+                        'profile_picture' => (int) $user['profile_picture'],
                         'created_at' => $user['created_at']
                     ];
                 }
@@ -908,7 +932,7 @@ class GetUsers{ //change to get
     }
 
     public function getUser($username){
-        $query = "SELECT name, email, username, age, created_at FROM user WHERE username=?";
+        $query = "SELECT name, email, username, age, profile_picture, created_at FROM user WHERE username=?";
         $stmt = $this->connection->prepare($query);
         $stmt->bindParam(1, $username, PDO::PARAM_STR);
 
@@ -923,6 +947,7 @@ class GetUsers{ //change to get
 
 
             $user['age'] = (int) $user['age'];
+            $user['profile_picture'] = (int) $user['profile_picture'];
 
             http_response_code(200);
             return createJSONResponse("success", [$user]);
