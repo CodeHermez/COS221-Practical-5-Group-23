@@ -958,3 +958,29 @@ class GetUsers{ //change to get
     }
 
 }
+
+class ChangeProfilePicture{
+    private $connection;
+
+    public function __construct($db){
+        $this->connection = $db;
+    }
+
+    public function changeProfile($data){
+        $query = "UPDATE user SET profile_picture = ? WHERE username = ?";
+        $stmt = $this->connection->prepare($query);
+        $stmt->bindParam(1, $data['profile_picture'], PDO::PARAM_INT);
+        $stmt->bindParam(2, $_SESSION['username'], PDO::PARAM_STR);
+
+        try {
+            $stmt->execute();
+            unset($stmt);
+            http_response_code(200);
+            return createJSONResponse("success", $data['profile_picture']);
+        } catch (PDOException $e) {
+            unset($stmt);
+            http_response_code(500);
+            return createJSONResponse("error", $e->getMessage());
+        }
+    }
+}
