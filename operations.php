@@ -19,7 +19,7 @@ function createJSONResponse($status, $returnArr){
     return json_encode($return);
 }
 
-class Register{ 
+class Register{ //user input
     private $email;
     private $password;
     private $username;
@@ -32,11 +32,11 @@ class Register{
     }
 
     public function createUser($data){
-        $this->name = $data['name'] ?? null;
-        $this->username = $data['username'] ?? null;
-        $this->age = $data['age'] ?? null;
-        $this->email = $data['email'] ?? null;
-        $this->password = $data['password'] ?? null; 
+        $this->name = htmlspecialchars($data['name'] ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $this->username = htmlspecialchars($data['username'] ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $this->age = filter_var($data['age'] ?? '', FILTER_VALIDATE_INT);
+        $this->email = filter_var($data['email'] ?? '', FILTER_SANITIZE_EMAIL);
+        $this->password = htmlspecialchars($data['password'] ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8');
 
         if (!$this->name || !$this->username || !$this->age || !$this->email || !$this->password) {
             http_response_code(400);
@@ -73,12 +73,12 @@ class Register{
 
             if($stmt->execute()){ 
                 $_SESSION['loggedIn'] = true;
-                setcookie('username', $this->username, time() + 3600, '/');
+                $_SESSION['username'] = $this->username;
                 http_response_code(200);
                 $status = "success";
                 $msg = ["username" => $this->username];
 
-                return createJSONResponse($status, [$msg]);
+                return createJSONResponse($status, $msg);
             }
             else{
                 http_response_code(500); 
@@ -301,13 +301,11 @@ class Register{
     }
 }
 
-class Login{ 
+class Login{ //user input
     public $password;
     public $salt;
     private $connection;
-    public $username;
-    private $email;
-    public $response_code;
+    private $username;
 
     /*email
     password
@@ -323,11 +321,11 @@ class Login{
 
         $requestData = json_decode(file_get_contents('php://input'), true);
 
-        $email = $requestData["email"] ?? null;
-        $password = $requestData["password"] ?? null;
+        $email = filter_var($requestData["email"] ?? '', FILTER_SANITIZE_EMAIL);
+        $this->password = $requestData["password"] ?? '';
 
   
-        if (!$email || !$password) {
+        if (!$email || !$this->password) {
             return [
                 "status" => $status,
                 "data" => "All fields are required."
@@ -344,15 +342,11 @@ class Login{
             if ($results !== false) {
                 // $results contains data, proceed with accessing its elements
                 $dbPassword = $results['password'];
-                $salt_and_password = $password . $results['salt'];
+                $salt_and_password = $this->password . $results['salt'];
                 $hashedPassword = hash('sha256', $salt_and_password);
 
                 if($dbPassword==$hashedPassword){
-                    // session_start();
-                    // $_SESSION["loggedIn"] = true;
-                    //set cookies
                     $this->username = $results['username'];
-
                     $status = true;
                 }
                 else{
@@ -363,11 +357,7 @@ class Login{
                 $data = "Invalid email or password.";
             }         
         }
-        else{ //uhm
-            //500?
-            // $data = "Something went wrong. Please try again later.";
-
-            // http_response_code(500); 
+        else{ 
             $data = $this->connection->error;
         }
 
@@ -384,20 +374,8 @@ class Login{
     public function handleLogin(){
 
         if(isset($_SESSION["loggedIn"]) && $_SESSION["loggedIn"] === true){
-
-            // exit;
-            // http_response_code(400);
-            // $response =  [
-            //     'status' => 'error',
-            //     'timestamp' => time(),
-            //     'data' => [
-            //         "You are already logged in."
-            //     ]
-            // ];
-
-            // $this->response_code = 400;
-            http_response_code(400);
-            $msg = "You are already logged in.";
+            http_response_code(401);
+            $msg = "User is already logged in.";
 
             return createJSONResponse('error', $msg);
         } else{
@@ -409,23 +387,21 @@ class Login{
             //if validRequest is true
 
             if($credentialsValid['status']==true){
-                $status = "success";
-                session_regenerate_id();
                 $_SESSION["loggedIn"] = true;
-                $data = "Login was successful.";
-                setcookie("username", $this->username, time() + 3600, "/");
+                $_SESSION['username'] = $this->username;
+                session_regenerate_id(true);
+                $status = "success";
+                $data = "Login successful.";
                 http_response_code(200);
             }
-            else{
-                // http_response_code(400);
-                // $this->response_code = 400;
+            else{      
                 $_SESSION["loggedIn"] = false;
-                http_response_code(400);
                 if (session_status() === PHP_SESSION_ACTIVE) {
                     session_destroy();
                 }
                 $status = "error";
                 $data = $credentialsValid['data'];
+                http_response_code(400);
             }
         }
 
@@ -439,16 +415,15 @@ class Logout{
 
     public function handleLogout(){
         if(isset($_SESSION["loggedIn"]) && $_SESSION["loggedIn"] == true){
-            $_SESSION= false; //wait
+            $_SESSION['loggedIn']= false; //wait
             session_unset();
             session_destroy();
-            setcookie("username", "", time() - 3600, "/");
             http_response_code(200);
-            return createJSONResponse("success", ["Logout successful."]);
+            return createJSONResponse("success", "Logout successful.");
 
         } else {
             http_response_code(401);
-            return createJSONResponse("error", "You are not logged in."); 
+            return createJSONResponse("error", "User is not logged in."); 
         }
     
     }
@@ -460,7 +435,6 @@ class AddReview{  //restricted to a user who is logged in
     private $comment;
     private $mediaID;
     private $username;
-    // public $code;
 
     public function __construct($db){
         $this->connection = $db;
@@ -479,16 +453,16 @@ class AddReview{  //restricted to a user who is logged in
             return createJSONResponse("error", "User is not logged in.");
         } 
 
-        $this->starRating = $data['starRating'] ?? null;
-        $this->mediaID = $data['mediaID'] ?? null;
+        $this->starRating = filter_var($data['starRating'] ?? '', FILTER_VALIDATE_FLOAT);
+        $this->mediaID = filter_var($data['mediaID'] ?? '', FILTER_VALIDATE_INT);
+        $this->comment = htmlspecialchars($data['comment'] ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8'); 
 
-        if(!$this->starRating && !$this->mediaID){    
+        if((!$this->starRating && !$this->comment) || !$this->mediaID){    
             http_response_code(400);
             return createJSONResponse("error", "Missing parameters.");
         }
-
-        $this->comment = $data["comment"] ?? null; 
-        $this->username = $_COOKIE['username'];
+        
+        $this->username = $_SESSION['username'];
 
         try {
             $query = 'INSERT INTO content_review (comments, starRating, mediaID) VALUES (?, ?, ?)';
@@ -499,15 +473,14 @@ class AddReview{  //restricted to a user who is logged in
 
             $stmt->execute();
 
-            //get review ID FROM CONTENT REIVEW
-            $insert_id = $this->connection->lastInsertId();
-
-            $query = 'INSERT INTO writes (reviewID, username) VALUES (?, ?)';
-            $stmt = $this->connection->prepare($query);
-            $stmt->bindParam(1, $insert_id,  PDO::PARAM_INT); 
-            $stmt->bindParam(2, $this->username, PDO::PARAM_STR);
-
             try {
+                //get review ID FROM CONTENT REIVEW
+                $insert_id = $this->connection->lastInsertId();
+
+                $query = 'INSERT INTO writes (reviewID, username) VALUES (?, ?)';
+                $stmt = $this->connection->prepare($query);
+                $stmt->bindParam(1, $insert_id,  PDO::PARAM_INT); 
+                $stmt->bindParam(2, $this->username, PDO::PARAM_STR);
                 $stmt->execute();
             } catch (PDOException $e) {
                 
@@ -526,14 +499,18 @@ class AddReview{  //restricted to a user who is logged in
             return createJSONResponse("error", "MediaID, {$this->mediaID}, does not exist.");            
         }
 
-       
-        // $this->code = 200; // OK
         http_response_code(200);
-        return createJSONResponse("success", ["Added review successfully."]);
+        $response = [
+            "reviewID" => (int) $insert_id,
+            "starRating" => (float) $this->starRating,
+            "comment" => $this->comment,
+            "media" =>$this->mediaID
+        ];
+        return createJSONResponse("success", $response);
     }
 }
 
-class GetReviews{  //no restrictoins //add filter and sort for star rating
+class GetReviews{  //no restrictoins //add filter and sort for star rating //get
     /* username
     
     mediaID*/
@@ -553,35 +530,9 @@ class GetReviews{  //no restrictoins //add filter and sort for star rating
         }
         
         if(isset($data['username'])){
+            $limit= $data['limit'] ?? 20;  //default
 
-             //return body - client
-                /*
-                    comments[
-                        {
-                            title : ,
-                            username : ,
-                            starRating : ,
-                            comment: 
-                        }
-                        {
-                            title : ,
-                            username : ,
-                            starRating : ,
-                            comment: 
-                        }
-                        {
-                            title : ,
-                            username : ,
-                            starRating : ,
-                            comment: 
-                        }
-                    ]
-                */
-        
-            
-                $limit= $data['limit'] ?? 20;  //default
-
-            $query = 'SELECT title, starRating, comments FROM writes
+            $query = 'SELECT writes.reviewID as reviewID, title, mediaID, starRating, comments FROM writes
             INNER JOIN content_review cr on writes.reviewID = cr.reviewID
             INNER JOIN entertainment_content ec on cr.mediaID = ec.media_ID
             WHERE username = ? LIMIT ?';
@@ -601,8 +552,10 @@ class GetReviews{  //no restrictoins //add filter and sort for star rating
                 $response = []; //if this is returned then the user has no comments? 
                 foreach($resultArr as $row){
                     $response[] = [
-                        'title' => $row['title'],
                         'username' => $data['username'],
+                        'title' => $row['title'],
+                        'mediaID' => (int) $row['mediaID'],
+                        'reviewID' => (int) $row['reviewID'],
                         'starRating' => (float) $row['starRating'],
                         'comment' => $row['comments']
                     ];
@@ -627,23 +580,11 @@ class GetReviews{  //no restrictoins //add filter and sort for star rating
                 WHERE mediaID = ?
                 LIMIT ?;
             */
-            //return body - for media
-            /*
-                comments[
-                    0 -> {
-                        mediaID => 
-                        title =>
-                        username => fjakjfa,
-                        starRating => 4.5,
-                        comment => 
-                    }
-                ]
-            */
 
             $mediaID = $data['mediaID'];
             $limit= $data['limit'] ?? 20;  //default
 
-            $query = 'SELECT mediaID,title,username,starRating,comments FROM writes
+            $query = 'SELECT writes.reviewID as reviewID, mediaID,title,username,starRating,comments FROM writes
             INNER JOIN content_review cr on writes.reviewID = cr.reviewID
             INNER JOIN entertainment_content ec on cr.mediaID = ec.media_ID
             WHERE mediaID = ?
@@ -658,15 +599,16 @@ class GetReviews{  //no restrictoins //add filter and sort for star rating
 
                 if(count($resultArr)==0){
                     unset($stmt);
-                    return createJSONResponse("error", "No reviews for media with the ID - {$mediaID}.");
+                    return createJSONResponse("error", "No reviews for media with the ID = {$mediaID}.");
                 }
 
                 foreach($resultArr as $row){
                     $response[] = [
-                        'mediaID' => $row['mediaID'],
-                        'title' => $row['title'],
                         'username' => $row['username'],
-                        'starRating' => $row['starRating'],
+                        'title' => $row['title'],
+                        'mediaID' => (int) $row['mediaID'],
+                        'reviewID' => (int) $row['reviewID'],
+                        'starRating' => (float) $row['starRating'],
                         'comment' => $row['comments']
                     ];
                 }
@@ -682,7 +624,7 @@ class GetReviews{  //no restrictoins //add filter and sort for star rating
     }
 }
 
-class DeleteReview{ //restricted to a user who is logged in
+class DeleteReview{ //restricted to a user who is logged in //post
     private $connection;
     // private $username; 
     //username
@@ -692,14 +634,13 @@ class DeleteReview{ //restricted to a user who is logged in
         $this->connection = $db;
     }
 
-    public function handleDeleteReview($data){ //frontend would have to ensure that users can only delete their own comments
-        
+    public function handleDeleteReview($data){ 
         if (!isset($_SESSION['loggedIn'])) {
             http_response_code(401);
             return createJSONResponse("error", "User is not logged in.");
         } 
         
-        if(!isset($data['reviewID']) || $data['reviewID']==null){  //at least one must be initialised
+        if(!isset($data['reviewID'])){  
             //error
             http_response_code(400);
             return createJSONResponse("error", "Missing parameters.");
@@ -737,17 +678,17 @@ class DeleteReview{ //restricted to a user who is logged in
                     unset($stmt1);
                     unset($stmt2);
                     http_response_code(200);
-                    return createJSONResponse("success", ["Review successfully deleted."]);
+                    return createJSONResponse("success", "Review was successfully deleted.");
                 } else {
                     unset($stmt1);
                     unset($stmt2);
-                    http_response_code(500); //?
+                    http_response_code(500); 
                     return createJSONResponse("error", $this->connection->error); //review id ne in content_review??
                 }
             } else {
                 unset($stmt1);
                 unset($stmt2);
-                http_response_code(500);//?
+                http_response_code(500);
                 return createJSONResponse("error",$this->connection->error); //review id dne in writes?
             }
         }
@@ -771,16 +712,15 @@ class DeleteReview{ //restricted to a user who is logged in
 class GetFriends{ //get request
     //usernameOrigin
     private $connection;
-    // private $username; //anyone will have this ability
 
     public function __construct($db){
         $this->connection = $db;
     }
 
     public function handleGetFriends($data){
-        if(!isset($data['username']) || $data['username']==null){
+        if(!isset($data['username'])){
             http_response_code(400);
-            return createJSONResponse("error", "Missing username parameter.");
+            return createJSONResponse("error", "Missing username.");
         }
 
         try {
@@ -805,7 +745,7 @@ class GetFriends{ //get request
             else{
                 unset($stmt);
                 http_response_code(500);
-                return createJSONResponse("error", $this->connection->error); //??
+                return createJSONResponse("error", $this->connection->error); 
             }
         } catch (PDOException $e) {
             unset($stmt);
@@ -813,25 +753,9 @@ class GetFriends{ //get request
             return createJSONResponse("error", $e->getMessage());
         }
     }
-
-
-    /*return
-    data[
-        {
-            username
-        }, 
-        {
-            username
-        }, 
-        {
-            username
-        }
-    ]
-
-    */
 }
 
-class AddFriend{ //done
+class AddFriend{ //post //user input
     /* usernameOrigin
     usernameFriend
     */
@@ -844,8 +768,8 @@ class AddFriend{ //done
     }
 
     public function handleAddFriend($data){
-        if(!isset($_COOKIE['username'])){
-            http_response_code(400);
+        if(!isset($_SESSION['loggedIn'])){
+            http_response_code(401);
             return createJSONResponse("error", "User is not logged in.");
         }
 
@@ -855,7 +779,7 @@ class AddFriend{ //done
         }
 
         try {
-            $this->username = $_COOKIE['username'];
+            $this->username = $_SESSION['username'];
             $query = 'INSERT INTO friend (username, friendID) VALUES (?, ?)';
             $stmt = $this->connection->prepare($query);
             $stmt->bindParam(1, $this->username,  PDO::PARAM_STR); 
@@ -864,22 +788,22 @@ class AddFriend{ //done
             if($stmt->execute()){
                 unset($stmt);
                 http_response_code(200);
-                return createJSONResponse("success", ["Friend added successfully."]);
+                return createJSONResponse("success", "Friend added successfully.");
             }
-            else{ //could be unreachable
-                unset($stmt);
-                http_response_code(400);
-                return createJSONResponse("error", "1" . $this->connection->error); //verify
-            }
+            // else{ //could be unreachable
+            //     unset($stmt);
+            //     http_response_code(400);
+            //     return createJSONResponse("error", $this->connection->error); //verify
+            // }
         } catch(PDOException $e){
-            unset($stmt);
+            // unset($stmt);
             http_response_code(500);
-            return createJSONResponse("error",  "User, {$data['friendID']}, does not exist.");
+            return createJSONResponse("error", $e->getMessage());
         }
     }
 }
 
-class RemoveFriend{
+class RemoveFriend{ //post
     /*usernameOrigin
     - usernameFriend
     */
@@ -895,7 +819,7 @@ class RemoveFriend{
     }
 
     public function handleRemoveFriend($data){
-        if(!isset($_COOKIE['username'])){
+        if(!isset($_SESSION['username'])){
             http_response_code(400);
             return createJSONResponse("error", "User is not logged in.");
         }
@@ -919,24 +843,22 @@ class RemoveFriend{
             if($stmt->execute()){
                 unset($stmt);
                 http_response_code(200);
-                return createJSONResponse("success", ["{$data['friendID']} successfully removed from {$data['username']}'s friends."]);
+                return createJSONResponse("success", "{$data['friendID']} successfully removed from {$data['username']}'s friends.");
             }
-            else{
-                unset($stmt);
-                http_response_code(500);
-                return createJSONResponse("error", $this->connection->error);
-            }
+            // else{
+            //     unset($stmt);
+            //     http_response_code(500);
+            //     return createJSONResponse("error", $this->connection->error);
+            // }
         } catch (PDOException $e) {
             unset($stmt);
             http_response_code(500);
             return createJSONResponse("error", $e->getMessage());
         }
-    }
-
-    
+    }    
 }
 
-class GetUsers{
+class GetUsers{ //change to get
     private $connection;
 
     public function __construct($db){
@@ -945,10 +867,11 @@ class GetUsers{
 
     public function handleGetUsers($data){
 
+
+
         if(isset($data['username']) && $data['username']!=null){
             return $this->getUser($data['username']);
         }
-
 
         $limit = isset($data['limit']) ? (int)$data['limit'] : 20;
         $order = isset($data['order']) ? strtoupper($data['order']) : "ASC";
@@ -965,14 +888,22 @@ class GetUsers{
 
         if($stmt->execute()){
             $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            unset($stmt);
+            // var_dump($users);
+            // unset($stmt);
 
-            foreach($users as $user){
-                $user['age'] = (int) $user['age'];
-            }
+            $response = []; 
+                foreach($users as $user){
+                    $response[] = [
+                        'name' => $user['username'],
+                        'email' => $user['email'],
+                        'username' => $user['username'],
+                        'age' => (int) $user['age'],
+                        'created_at' => $user['created_at']
+                    ];
+                }
 
             http_response_code(200);
-            return createJSONResponse("success", $users);
+            return createJSONResponse("success", $response);
         } else {
             http_response_code(400);
             return createJSONResponse("error", "Failed to retrieve users.");
