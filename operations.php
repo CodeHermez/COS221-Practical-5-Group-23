@@ -76,7 +76,9 @@ class Register{ //user input
                 $_SESSION['username'] = $this->username;
                 http_response_code(200);
                 $status = "success";
-                $msg = ["username" => $this->username];
+                $msg = ["username" => $this->username,
+                        "profile_picture" => 1                
+                ];
 
                 return createJSONResponse($status, $msg);
             }
