@@ -29,10 +29,11 @@ This function handles a POST request to add a favourite genre to the users profi
 ### Example Request (personal)
 
 ```json
+
 {
     "username": "alex_wong",
     "genre": "war"
-}"
+}
 ```
 
 ### Example Response (personal)
