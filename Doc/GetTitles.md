@@ -6,13 +6,13 @@ http://localhost/COS221-Practical-5-Group-23/api/GetTitle.php
 
 ### Description
 
-This function handles a POST request to retireve details about movies or tvshows and can also be used to filter title base on a few criteria such as, ***duration if its a movie***   accepting a few parameters. if you give a duration search/constraint you can imidately assume its a movie or if you give a season season search/constraint you can immediatly assume its a tvshow. 
+This function handles a POST request to retrieve details about movies or TV shows and can also be used to filter titles based on a few criteria such as ***duration if it is a movie***   accepting a few parameters. if you give a duration search/constraint you can immediately assume it's a movie or if you give a season search/constraint you can immediately assume it's a TV show. 
 
-Note: that duration is in minutes so its an integer and release_date is year of release so its also an integer.
+Note: that duration is in minutes so it's an integer and release_date is the year of release so it's also an integer.
 
 ### Parameters (if a parameter has an asterisk{*} next to it, it means this key is required)
 
-- *`return` (string || Array<string>): The string `"*"` is used to return all results or an array containing the items to return. The array should only contain from any of the following:  
+- *`return` (string || Array<string>): The string `"*"` is used to return all results or an array containing the items to return. The array should only contain any of the following:  
   
   `['list.media_ID', 'title, 'release_Date', 'description', 'content_rating', 'rating', 'poster_Url', 'Genre', 'CAST', 'DIRECTOR', 'WRITER', 'duration', 'seasons']`
   
@@ -20,23 +20,23 @@ Note: that duration is in minutes so its an integer and release_date is year of 
 
 - *`limit` (int):  A number between 1 and 100 indicating how many results should be returned. 
   
-  Note: php does not support async function (i couldve looking up how to do it but nako) so making a request with 100 limits will be at the cost of your own time, i suggest keeping the limit $[1,30]$.
+  Note: PHP does not support the async function (I could've looked up how to do it but nako⏳) so making a request with a limit of 100  will be at the cost of your own time, I suggest keeping the limit $[1,30]$.
 
 - `sort`(Array<string>): The results can be sorted by any of the following attributes: `['media_ID', 'title, 'release_Date', 'description', 'content_rating', 'rating', 'poster_Url', 'Genre', 'CAST', 'DIRECTOR', 'WRITER', 'duration', 'seasons']`
   
   - `order` (string): The results can be ordered by "ASC" or "DESC" for ascending or descending respectively.
     
-    Note: the reason order is indented into sort is because if you have a sort you ***MUST***  an order otherwise a badrequest(400) will be return. And you cannot have an order by its self.
+    Note: the reason the order is indented into sort is that if you have a sort you ***MUST***  an order otherwise a bad request(400) will be returned. And you cannot have an order by itself.
 
 - `search`(JSON): An object where the keys are columns of the data and the values are the search terms. Columns can be any of the following: `['type', 'title, 'release_Date', 'id', 'genre', 'rating', 'poster_Url', 'Genre', 'CAST', 'DIRECTOR', 'WRITER', 'duration', 'seasons']`
   
-  - `type` (string): This is the type of content that should be search for, its strictly has to be "tvshow" or "movie";
+  - `type` (string): This is the type of content that should be searched for, it strictly has to be "tvshow" or "movie";
   
-  - `title` (int): The title of the movie that youd like to search for;
+  - `title` (int): The title of the movie that you'd like to search for;
   
-  - `id` (int): the id/media_id of the content youd like to search for;
+  - `id` (int): the id/media_id of the content you'd like to search for;
   
-  - `genre` (string): The title that you would like filtered by the genre thats associated
+  - `genre` (string): The title that you would like filtered by the genre that's associated
   
   - `rating` (int): Titles with a specific rating $[1,5]$;
   
@@ -44,11 +44,11 @@ Note: that duration is in minutes so its an integer and release_date is year of 
   
   - `release_date` (int): The year in which a title is released.
   
-  - `cast` (string): Retrieves the title based on the name of the cast member, you can enter either a firstname or a lastname to search for the title associated with the desired cast member.
+  - `cast` (string): Retrieves the title based on the name of the cast member, you can enter either a first name or a last name to search for the title associated with the desired cast member.
   
-  - `director` (string): Retrieves the title based on the name of the director, you can enter either a firstname or a lastname to search for the title associated with the desired director.
+  - `director` (string): Retrieves the title based on the name of the director, you can enter either a first name or a last name to search for the title associated with the desired director.
   
-  - `writer` (string): Retrieves titles based on the name of the writer, you can enter either a firstname or a lastname to search for the title associated with the desired writer.
+  - `writer` (string): Retrieves titles based on the name of the writer, you can enter either a first name or a last name to search for the title associated with the desired writer.
   
   - `minduration` (int): Retrieves titles based on if their duration is greater than or equal to minduration  $[minduration,\infty]$
   
@@ -58,15 +58,15 @@ Note: that duration is in minutes so its an integer and release_date is year of 
   
   - `maxseasons` (int): Retrieves titles based on if the number of seasons is less than or equal to maxseasons $[0,maxseasons]$
     
-    Note: You cannot search for type:"movie" and also have a `maxseasons` or `minseasons` and also for type:"tvshow"" you cant have a `minduration` or a `maxduration` as this will through a bad request(400) casue thats what distiguishes a movie from tvshow. but you can have a duration or a season search if you done have the opposing type or not have a type search at all and this will still be valid.
+    Note: You cannot search for "type":"movie" and also have a `maxseasons` or `minseasons` and also for "type":"tvshow"" you can't have a `minduration` or a `maxduration` as this will through a bad request(400) cause that's what distinguishes a movie from a tv show. but you can have a duration or a season search if you do have the opposing type or do not have a type search at all and this will still be valid.
   
-  - `minrating` (int): Retrieves titles based on if thier ratings are greater than or equal to minrating $[minrating,\infty]$
+  - `minrating` (int): Retrieves titles based on if their ratings are greater than or equal to minrating $[minrating,\infty]$
   
-  - `maxrating`` (int): Retrieves titles based on if thier ratings are less than or equal to maxrating $[0,maxrating]$
+  - `maxrating`` (int): Retrieves titles based on if their ratings are less than or equal to maxrating $[0,maxrating]$
   
-  - `minreleasedate` (int): Retrieves titles based on if thier release date is later than or equal to minreleasedate $[minreleasedate,\infty]$
+  - `minreleasedate` (int): Retrieves titles based on if their release date is later than or equal to minreleasedate $[minreleasedate,\infty]$
   
-  - `maxreleasedate` Retrieves titles based on if thier release date is earlier than or or equal to maxreleasedate $[0,maxreleasedate]$
+  - `maxreleasedate` Retrieves titles based on if their release date is earlier than or equal to maxreleasedate $[0,maxreleasedate]$
     
     Note: when it comes to filtering using `min-` and `max-` and they relate such as `minduration` and `maxduration` in the same request it will limit the domain from being $\infty$ for min and being $0$ max and will instead be a domain of $[minduration,maxduration]$.
 
@@ -103,31 +103,31 @@ Note: that duration is in minutes so its an integer and release_date is year of 
 
 ### Returns
 
-- `timestamp` (integer): The time in at which the request was made.
+- `timestamp` (integer): The time at which the request was made.
 
 - `status` (string): Status of the request, either "success" or "error".
 
-- `data` (Array<JSON OBJECT>): If successful, contains the requested user recommendation data in array form of json object elemets.
+- `data` (Array<JSON OBJECT>): If successful, contains the requested user recommendation data in array form of JSON object elements.
   
   - `id` (int): The media_ID of the title
   
-  - `title` (string): The title of the title youre retrieving
+  - `title` (string): The title of the title you are retrieving
   
   - `image` (string): The image poster of the title
   
   - `description` (string): The description of the title
   
-  - `seasons` (int): The number of seasons the tvshow has.
+  - `seasons` (int): The number of seasons the TV show has.
   
   - `duration` (int): The duration of the movie.
   
   - `content_rating` (string): The age restriction of the title
   
-  - `release_date` (integer): The year at which the title was release
+  - `release_date` (integer): The year in which the title was released
   
   - `genre` (Array): The genres associated with the title
   
-  - `cast` (Array): The names of acting cast associated with the title
+  - `cast` (Array): The names of the acting cast associated with the title
   
   - `director` (Array): The names of directors associated with the title
   
