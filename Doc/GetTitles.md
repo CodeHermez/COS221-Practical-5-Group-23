@@ -62,7 +62,7 @@ Note: that duration is in minutes so it's an integer and release_date is the yea
   
   - `minrating` (int): Retrieves titles based on if their ratings are greater than or equal to minrating $[minrating,\infty]$
   
-  - `maxrating`` (int): Retrieves titles based on if their ratings are less than or equal to maxrating $[0,maxrating]$
+  - `maxrating` (int): Retrieves titles based on if their ratings are less than or equal to maxrating $[0,maxrating]$
   
   - `minreleasedate` (int): Retrieves titles based on if their release date is later than or equal to minreleasedate $[minreleasedate,\infty]$
   
