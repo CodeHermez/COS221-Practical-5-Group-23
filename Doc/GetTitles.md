@@ -60,7 +60,7 @@ Note: that duration is in minutes so it's an integer and release_date is the yea
     
     Note: You cannot search for "type":"movie" and also have a `maxseasons` or `minseasons` and also for "type":"tvshow"" you can't have a `minduration` or a `maxduration` as this will through a bad request(400) cause that's what distinguishes a movie from a tv show. but you can have a duration or a season search if you do have the opposing type or do not have a type search at all and this will still be valid.
   
-  - `minrating` (int): Retrieves titles based on if their ratings are greater than or equal to minrating $[minrating,\infty]$
+  - `minrating` (int): Retrieves titles based on if their ratings are greater than or equal to minrating $[minrating,5]$
   
   - `maxrating` (int): Retrieves titles based on if their ratings are less than or equal to maxrating $[0,maxrating]$
   
