@@ -42,17 +42,17 @@ class Register{ //user input
             http_response_code(400);
             return createJSONResponse("error", "All fields are required.");
         }
-    
+
         //check if email and/or username exist
         $exists = $this->exists($this->username,  $this->email);
-        if($exists['exists']==true){       
+        if($exists['exists']==true){
             http_response_code(400);
             return createJSONResponse("error", $exists['message']);
         }
 
         //structure checking
         $information = $this->valid($this->age, $this->email, $this->password );
-        
+
         if($information["valid"]){
             //create the salt and add salt to password
             $salt = $this->getRandomString();
@@ -60,7 +60,7 @@ class Register{ //user input
 
             //hash password
             $hashedPassword = hash('sha256', $newPassword);
-            
+
             //start creating the sql query to insert user to database
             $query = "INSERT INTO user (username, name, email, password, salt, age, created_at) VALUES (?, ?, ?, ?, ?, ?, NOW())";
             $stmt = $this->connection->prepare($query);
@@ -71,28 +71,28 @@ class Register{ //user input
             $stmt->bindParam(5, $salt, PDO::PARAM_STR);
             $stmt->bindParam(6, $this->age, PDO::PARAM_INT);
 
-            if($stmt->execute()){ 
+            if($stmt->execute()){
                 $_SESSION['loggedIn'] = true;
                 $_SESSION['username'] = $this->username;
                 http_response_code(200);
                 $status = "success";
                 $msg = ["username" => $this->username,
-                        "profile_picture" => 1                
+                    "profile_picture" => 1
                 ];
 
                 return createJSONResponse($status, $msg);
             }
             else{
-                http_response_code(500); 
-                $status = "error"; 
+                http_response_code(500);
+                $status = "error";
                 $msg = $this->connection->error;
             }
         }
         else{
-            http_response_code(400); 
+            http_response_code(400);
             $status = "error"; //400
             $msg = $information['message'];
-        }    
+        }
 
         unset($stmt);
 
@@ -107,7 +107,7 @@ class Register{ //user input
         $stmt = $this->connection->prepare($query);
 
         //if stmt has no results then the user does not exist yet 
-        
+
         $stmt->bindParam(1, $username, PDO::PARAM_STR);
         $stmt->bindParam(2, $email, PDO::PARAM_STR);
         if($stmt->execute()){
@@ -152,14 +152,14 @@ class Register{ //user input
         else{
             unset($stmt);
             return [
-                "exists" => $flag,
-                "message" => $stmt->error
+                "exists" => "",
+                "message" => ""
             ];
         }
     }
 
     private function valid($age, $email, $password){
-    
+
         //check that age is valid
         $ageValid = $this->validateUserInput($age, "age");
         if (!$ageValid["valid"]) {
@@ -190,7 +190,7 @@ class Register{ //user input
                 if($var < 13){
                     $valid = false;
                     $errMsg = "User must be at least 13 years old.";
-                } 
+                }
                 break;
 
             case 'email':
@@ -207,11 +207,11 @@ class Register{ //user input
                     $valid = false;
                     $errMsg = $info['message'];
                 }
-                break;     
+                break;
             default:
                 $valid = false;
                 $errMsg = "Unexpected variable: " . $var;
-                // $this->response_code = 400;
+            // $this->response_code = 400;
         }
 
         $errorInfo = [
@@ -250,7 +250,7 @@ class Register{ //user input
                 $flag = false;
                 $msg .= "Password must contain at least one lowercase letter.\n";
             }
-            
+
             //check for a digit
             if(!preg_match('/\d/', $password)){
                 $flag = false;
@@ -282,7 +282,7 @@ class Register{ //user input
         return $info;
     }
 
-    private function validEmail($email){ 
+    private function validEmail($email){
         //check that the structure is valid - VALIDSTRUCT==TRUE ELSE FALSE
         if(!filter_var($email, FILTER_VALIDATE_EMAIL)){
             return[
@@ -327,7 +327,7 @@ class Login{ //user input
         $email = filter_var($requestData["email"] ?? '', FILTER_SANITIZE_EMAIL);
         $this->password = $requestData["password"] ?? '';
 
-  
+
         if (!$email || !$this->password) {
             return [
                 "status" => $status,
@@ -338,7 +338,7 @@ class Login{ //user input
         $query = 'SELECT salt, password, username, profile_picture, name FROM user WHERE email=?';
         $stmt = $this->connection->prepare($query);
         $stmt->bindParam(1, $email,  PDO::PARAM_STR);
-        
+
         if($stmt->execute()){
             $results = $stmt->fetch(PDO::FETCH_ASSOC);
             //check if results returned anything
@@ -356,12 +356,12 @@ class Login{ //user input
                 else{
                     $data = "Invalid email or password.";
                 }
-                
+
             } else {
                 $data = "Invalid email or password.";
-            }         
+            }
         }
-        else{ 
+        else{
             $data = $this->connection->error;
         }
 
@@ -401,7 +401,7 @@ class Login{ //user input
                 ];
                 http_response_code(200);
             }
-            else{      
+            else{
                 $_SESSION["loggedIn"] = false;
                 if (session_status() === PHP_SESSION_ACTIVE) {
                     session_destroy();
@@ -430,9 +430,9 @@ class Logout{
 
         } else {
             http_response_code(401);
-            return createJSONResponse("error", "User is not logged in."); 
+            return createJSONResponse("error", "User is not logged in.");
         }
-    
+
     }
 }
 
@@ -458,23 +458,23 @@ class AddReview{  //restricted to a user who is logged in
         if (!isset($_SESSION['loggedIn'])) {
             http_response_code(401);
             return createJSONResponse("error", "User is not logged in.");
-        } 
+        }
 
         $this->starRating = filter_var($data['starRating'] ?? '', FILTER_VALIDATE_FLOAT);
         $this->mediaID = filter_var($data['mediaID'] ?? '', FILTER_VALIDATE_INT);
-        $this->comment = htmlspecialchars($data['comment'] ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8'); 
+        $this->comment = htmlspecialchars($data['comment'] ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8');
 
-        if((!$this->starRating && !$this->comment) || !$this->mediaID){    
+        if((!$this->starRating && !$this->comment) || !$this->mediaID){
             http_response_code(400);
             return createJSONResponse("error", "Missing parameters.");
         }
-        
+
         $this->username = $_SESSION['username'];
 
         try {
             $query = 'INSERT INTO content_review (comments, starRating, mediaID) VALUES (?, ?, ?)';
             $stmt = $this->connection->prepare($query);
-            $stmt->bindParam(1, $this->comment,  PDO::PARAM_STR); 
+            $stmt->bindParam(1, $this->comment,  PDO::PARAM_STR);
             $stmt->bindParam(2, $this->starRating, PDO::PARAM_INT);
             $stmt->bindParam(3, $this->mediaID, PDO::PARAM_INT);
 
@@ -486,11 +486,11 @@ class AddReview{  //restricted to a user who is logged in
 
                 $query = 'INSERT INTO writes (reviewID, username) VALUES (?, ?)';
                 $stmt = $this->connection->prepare($query);
-                $stmt->bindParam(1, $insert_id,  PDO::PARAM_INT); 
+                $stmt->bindParam(1, $insert_id,  PDO::PARAM_INT);
                 $stmt->bindParam(2, $this->username, PDO::PARAM_STR);
                 $stmt->execute();
             } catch (PDOException $e) {
-                
+
                 //delete the insert into content_review
                 $query2 = 'DELETE FROM content_review WHERE reviewID = ?';
                 $stmt2 = $this->connection->prepare($query2);
@@ -498,12 +498,13 @@ class AddReview{  //restricted to a user who is logged in
                 $stmt2->execute();
                 unset($stmt);
 
-                return createJSONResponse("error", $stmt->error);
+                //Bob commented out $stmt->error
+                return createJSONResponse("error", /*$stmt->error*/ $e->getMessage());
             }
         } catch (PDOException $e) {
             unset($stmt);
             http_response_code(500);
-            return createJSONResponse("error", "MediaID, {$this->mediaID}, does not exist.");            
+            return createJSONResponse("error", "MediaID, {$this->mediaID}, does not exist.");
         }
 
         http_response_code(200);
@@ -517,24 +518,24 @@ class AddReview{  //restricted to a user who is logged in
     }
 }
 
-class GetReviews{  //no restrictoins 
+class GetReviews{  //no restrictoins
     /* username
     mediaID*/
     private $connection;
     private $username;
- 
+
     public function __construct($db){
         $this->connection = $db;
     }
 
     public function handleGetReviews($data){
 
-        if((!isset($data['username']) || $data['username']==null) && (!isset($data['mediaID']) || $data['mediaID']==null)){  
+        if((!isset($data['username']) || $data['username']==null) && (!isset($data['mediaID']) || $data['mediaID']==null)){
             //error
             http_response_code(400);
             return createJSONResponse("error", "Missing parameters.");
         }
-        
+
         if(isset($data['username'])){
             $limit= $data['limit'] ?? 20;  //default
 
@@ -559,7 +560,7 @@ class GetReviews{  //no restrictoins
 
 
 
-                $response = []; //if this is returned then the user has no comments? 
+                $response = []; //if this is returned then the user has no comments?
                 foreach($resultArr as $row){
                     $response[] = [
                         'username' => $data['username'],
@@ -574,13 +575,13 @@ class GetReviews{  //no restrictoins
                 unset($stmt);
                 http_response_code(200);
                 return createJSONResponse("success", $response);
-            } 
+            }
             else{
                 unset($stmt);
                 http_response_code(500);
                 createJSONResponse("error", $this->connection->error);
             }
-        } 
+        }
         else{
             /*
                 Get review based on media ID
@@ -636,21 +637,21 @@ class GetReviews{  //no restrictoins
                     http_response_code(500);
                     createJSONResponse("error", $this->connection->error);
                 }
-                
+
             } catch (PDOException $e) {
                 unset($stmt);
                 http_response_code(500);
                 return createJSONResponse("error", $e->getMessage());
             }
-                
-            
+
+
         }
     }
 }
 
 class DeleteReview{ //restricted to a user who is logged in //post
     private $connection;
-    // private $username; 
+    // private $username;
     //username
     //reviewID
 
@@ -658,13 +659,13 @@ class DeleteReview{ //restricted to a user who is logged in //post
         $this->connection = $db;
     }
 
-    public function handleDeleteReview($data){ 
+    public function handleDeleteReview($data){
         if (!isset($_SESSION['loggedIn'])) {
             http_response_code(401);
             return createJSONResponse("error", "User is not logged in.");
-        } 
-        
-        if(!isset($data['reviewID'])){  
+        }
+
+        if(!isset($data['reviewID'])){
             //error
             http_response_code(400);
             return createJSONResponse("error", "Missing parameters.");
@@ -682,7 +683,7 @@ class DeleteReview{ //restricted to a user who is logged in //post
             if($stmt1->execute()){
 
                 if($stmt1->rowCount() == 0){
-                    //nothing was deleted 
+                    //nothing was deleted
                     unset($stmt1);
                     http_response_code(400);
                     return createJSONResponse("error", "No deletions were made. Check reviewID.");
@@ -692,7 +693,7 @@ class DeleteReview{ //restricted to a user who is logged in //post
 
                 if($stmt2->execute()){
                     if($stmt1->rowCount() == 0){
-                        //nothing was deleted 
+                        //nothing was deleted
                         unset($stmt1);
                         unset($stmt2);
                         http_response_code(400);
@@ -706,7 +707,7 @@ class DeleteReview{ //restricted to a user who is logged in //post
                 } else {
                     unset($stmt1);
                     unset($stmt2);
-                    http_response_code(500); 
+                    http_response_code(500);
                     return createJSONResponse("error", $this->connection->error); //review id ne in content_review??
                 }
             } else {
@@ -728,7 +729,7 @@ class DeleteReview{ //restricted to a user who is logged in //post
                 SELECT writes.reviewID FROM writes
                 );
     */
-    
+
 
 
 }
@@ -756,7 +757,7 @@ class GetFriends{ //get request
 
             if($stmt->execute()){
                 $resultArr = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
+
                 $response = [];
                 foreach($resultArr as $row){
                     $response[] = [
@@ -765,14 +766,14 @@ class GetFriends{ //get request
                     ];
                 }
                 unset($stmt);
-    
+
                 http_response_code(200);
                 return createJSONResponse("success", $response);
             }
             else{
                 unset($stmt);
                 http_response_code(500);
-                return createJSONResponse("error", $this->connection->error); 
+                return createJSONResponse("error", $this->connection->error);
             }
         } catch (PDOException $e) {
             unset($stmt);
@@ -789,7 +790,7 @@ class AddFriend{ //post //user input
 
     private $connection;
     private $username;
- 
+
     public function __construct($db){
         $this->connection = $db;
     }
@@ -809,7 +810,7 @@ class AddFriend{ //post //user input
             $this->username = $_SESSION['username'];
             $query = 'INSERT INTO friend (username, friendID) VALUES (?, ?)';
             $stmt = $this->connection->prepare($query);
-            $stmt->bindParam(1, $this->username,  PDO::PARAM_STR); 
+            $stmt->bindParam(1, $this->username,  PDO::PARAM_STR);
             $stmt->bindParam(2, $data['friendID'], PDO::PARAM_STR);
 
             if($stmt->execute()){
@@ -882,7 +883,7 @@ class RemoveFriend{ //post
             http_response_code(500);
             return createJSONResponse("error", $e->getMessage());
         }
-    }    
+    }
 }
 
 class GetUsers{ //change to get
@@ -907,7 +908,7 @@ class GetUsers{ //change to get
         $query = "SELECT name, email, username, age, profile_picture, created_at FROM user ORDER BY name $order LIMIT :limit";
 
         $stmt = $this->connection->prepare($query);
-        
+
         $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
 
         if($stmt->execute()){
@@ -915,17 +916,17 @@ class GetUsers{ //change to get
             // var_dump($users);
             // unset($stmt);
 
-            $response = []; 
-                foreach($users as $user){
-                    $response[] = [
-                        'name' => $user['username'],
-                        'email' => $user['email'],
-                        'username' => $user['username'],
-                        'age' => (int) $user['age'],
-                        'profile_picture' => (int) $user['profile_picture'],
-                        'created_at' => $user['created_at']
-                    ];
-                }
+            $response = [];
+            foreach($users as $user){
+                $response[] = [
+                    'name' => $user['username'],
+                    'email' => $user['email'],
+                    'username' => $user['username'],
+                    'age' => (int) $user['age'],
+                    'profile_picture' => (int) $user['profile_picture'],
+                    'created_at' => $user['created_at']
+                ];
+            }
 
             http_response_code(200);
             return createJSONResponse("success", $response);
@@ -1004,6 +1005,7 @@ class createTitle
     public $release_date;
     public $duration;
     public $seasons;
+    public $image_url;
     public $type;
     public $actors = null;
     public $writers = null;
@@ -1023,21 +1025,23 @@ class createTitle
         //remember to check implement crew and genre from matt
 
 
-        $query = "INSERT INTO entertainment_content (title, release_Date, description, content_rating, rating)  
-                    VALUES (:title, :release_date, :description, :content_rating, :rating);";
+        $query = "INSERT INTO entertainment_content (title, release_Date, description, content_rating, rating, poster_Url)  
+                    VALUES (:title, :release_date, :description, :content_rating, :rating, :image_url);";
 
         $stmt = $this->connection->prepare($query);
         $this->title = filter_var($this->title, FILTER_SANITIZE_STRING);
         $this->release_date = filter_var($this->release_date, FILTER_VALIDATE_INT);
         $this->description = filter_var($this->description, FILTER_SANITIZE_STRING);
         $this->content_rating = filter_var($this->content_rating, FILTER_SANITIZE_STRING);
-        $this->rating = filter_var($this->rating, FILTER_VALIDATE_INT);
+        $this->rating = filter_var($this->rating, FILTER_SANITIZE_NUMBER_INT);
+        $this->image_url = filter_var($this->image_url, FILTER_SANITIZE_URL);
 
         $this->title = htmlspecialchars(strip_tags($this->title));
         $this->release_date = intval(htmlspecialchars(strip_tags($this->release_date)));
         $this->description = htmlspecialchars(strip_tags($this->description));
         $this->content_rating = htmlspecialchars(strip_tags($this->content_rating));
         $this->rating = intval(htmlspecialchars(strip_tags($this->rating)));
+        $this->image_url = htmlspecialchars(strip_tags($this->image_url));
 
 
         $stmt->bindParam(":title", $this->title);
@@ -1045,9 +1049,13 @@ class createTitle
         $stmt->bindParam(":description", $this->description);
         $stmt->bindParam(":content_rating", $this->content_rating);
         $stmt->bindParam(":rating", $this->rating);
+        $stmt->bindParam(":image_url", $this->image_url);
 
-
-        $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
+        try {
+            $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
+        } catch (PDOException $e) {
+            return false;
+        }
 
         $media_id = $this->connection->lastInsertId();
 
@@ -1055,21 +1063,33 @@ class createTitle
         {
             $query = "INSERT INTO movie (media_ID, duration) VALUES (:media_id, :duration);";
             $stmt = $this->connection->prepare($query);
-            $this->duration = filter_var($this->duration, FILTER_VALIDATE_INT);
+            $this->duration = filter_var($this->duration, FILTER_SANITIZE_NUMBER_INT);
             $this->duration = intval(htmlspecialchars(strip_tags($this->duration)));
             $stmt->bindParam(":media_id", $media_id);
             $stmt->bindParam(":duration", $this->duration);
-            $stmt->execute();
+            try {
+                $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
+            }
+            catch (PDOException $e)
+            {
+                return false;
+            }
         }
         else if($this->type == "tvshow")
         {
             $query = "INSERT INTO tvshow (media_ID, seasons) VALUES (:media_id, :seasons);";
             $stmt = $this->connection->prepare($query);
-            $this->seasons = filter_var($this->seasons, FILTER_VALIDATE_INT);
+            $this->seasons = filter_var($this->seasons, FILTER_SANITIZE_NUMBER_INT);
             $this->seasons = intval(htmlspecialchars(strip_tags($this->seasons)));
             $stmt->bindParam(":media_id", $media_id);
             $stmt->bindParam(":seasons", $this->seasons);
-            $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
+            try {
+                $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
+            }
+            catch (PDOException $e)
+            {
+                return false;
+            }
         }
 
 
@@ -1086,14 +1106,26 @@ class createTitle
                 $actor_name = htmlspecialchars(strip_tags($actor_name));
                 $stmt->bindParam(":name", $actor_name);
                 $stmt->bindParam(":role", $actor);
-                $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
+                try {
+                    $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
+                }
+                catch (PDOException $e)
+                {
+                    return false;
+                }
                 $crew_id = $this->connection->lastInsertId();
 
                 $query2 = "INSERT INTO involved_in (crewID, media_ID) VALUES (:crewID,:media_ID);";
                 $stmt2 = $this->connection->prepare($query2);
                 $stmt2->bindParam(":crewID", $crew_id);
                 $stmt2->bindParam(":media_ID", $media_id);
-                $stmt2->execute() or die("Error: " . $stmt2->errorInfo()[2]);
+                try {
+                    $stmt2->execute() or die("Error: " . $stmt2->errorInfo()[2]);
+                }
+                catch (PDOException $e)
+                {
+                    return false;
+                }
             }
         if($this->writers!=null)
             foreach($this->writers as $writer_name)
@@ -1102,14 +1134,26 @@ class createTitle
                 $writer_name = htmlspecialchars(strip_tags($writer_name));
                 $stmt->bindParam(":name", $writer_name);
                 $stmt->bindParam(":role", $writer);
-                $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
+                try {
+                    $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
+                }
+                catch (PDOException $e)
+                {
+                    return false;
+                }
                 $crew_id = $this->connection->lastInsertId();
 
                 $query2 = "INSERT INTO involved_in (crewID, media_ID) VALUES (:crewID,:media_ID);";
                 $stmt2 = $this->connection->prepare($query2);
                 $stmt2->bindParam(":crewID", $crew_id);
                 $stmt2->bindParam(":media_ID", $media_id);
-                $stmt2->execute() or die("Error: " . $stmt2->errorInfo()[2]);
+                try {
+                    $stmt2->execute() or die("Error: " . $stmt2->errorInfo()[2]);
+                }
+                catch (PDOException $e)
+                {
+                    return false;
+                }
             }
         if($this->directors!=null)
             foreach($this->directors as $director_name)
@@ -1118,37 +1162,61 @@ class createTitle
                 $director_name = htmlspecialchars(strip_tags($director_name));
                 $stmt->bindParam(":name", $director_name);
                 $stmt->bindParam(":role", $director);
-                $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
+                try {
+                    $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
+                }
+                catch (PDOException $e)
+                {
+                    return false;
+                }
                 $crew_id = $this->connection->lastInsertId();
 
                 $query2 = "INSERT INTO involved_in (crewID, media_ID) VALUES (:crewID,:media_ID);";
                 $stmt2 = $this->connection->prepare($query2);
                 $stmt2->bindParam(":crewID", $crew_id);
                 $stmt2->bindParam(":media_ID", $media_id);
-                $stmt2->execute() or die("Error: " . $stmt2->errorInfo()[2]);
+                try {
+                    $stmt2->execute() or die("Error: " . $stmt2->errorInfo()[2]);
+                }
+                catch (PDOException $e)
+                {
+                    return false;
+                }
             }
 
-        $query = "SELECT genreID FROM genre WHERE genreName = :genre;";
-        $stmt = $this->connection->prepare($query);
-        $stmt->bindParam(":genre", $this->genre);
-        $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
-        if($stmt->rowCount() == 0)
-        {
-            $query = "INSERT INTO genre (genreName) VALUES (:genre);";
-            $stmt = $this->connection->prepare($query);
-            $stmt->bindParam(":genre", $this->genre);
-            $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
+        if($this->genre!=null) {
+            foreach ($this->genre as $genre) {
+                $query = "SELECT genreID FROM genre WHERE genreName = :genre;";
+                $stmt = $this->connection->prepare($query);
+                $stmt->bindParam(":genre", $genre);
+                try {
+                    $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
+                }catch(PDOException $e)
+                {
+                    return false;
+                }
+
+                if($stmt->rowCount() > 0) {
+                    $r = $stmt->fetch(PDO::FETCH_ASSOC);
+                    $genre_id = $r["genreID"];
+                    $query2 = "INSERT INTO belongs (genreID, media_ID) VALUES (:genreID, :media_ID);";
+                    $stmt2 = $this->connection->prepare($query2);
+                    $stmt2->bindParam(":genreID", $genre_id);
+                    $stmt2->bindParam(":media_ID", $media_id);
+                    try
+                    {
+                        $stmt2->execute() or die("Error: " . $stmt2->errorInfo()[2]);
+
+                    }catch (PDOException $e)
+                    {
+                        return false;
+                    }
+                }
+                else
+                    return false;
+            }
         }
-        else
-        {
-            $r = $stmt->fetch(PDO::FETCH_ASSOC);
-            $genre_id = $r["genreID"];
-            $query2 = "INSERT INTO belongs (genreID, media_ID) VALUES (:genreID, :media_ID);";
-            $stmt2 = $this->connection->prepare($query2);
-            $stmt2->bindParam(":genreID", $genre_id);
-            $stmt2->bindParam(":media_ID", $media_id);
-            $stmt2->execute() or die("Error: " . $stmt2->errorInfo()[2]);
-        }
+
 
         return true;
     }
@@ -1168,10 +1236,15 @@ class deleteTitle
     {
         $query = "DELETE FROM entertainment_content WHERE media_ID = :media_id;";
         $stmt = $this->connection->prepare($query);
-        $this->media_id = filter_var($this->media_id, FILTER_VALIDATE_INT);
+        $this->media_id = filter_var($this->media_id, FILTER_SANITIZE_NUMBER_INT);
         $this->media_id = intval(htmlspecialchars(strip_tags($this->media_id)));
         $stmt->bindParam(":media_id", $this->media_id);
-        $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
+        try {
+            $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
+        }catch (PDOException $e)
+        {
+            return false;
+        }
         return $stmt->rowCount() > 0;
     }
 }
@@ -1191,7 +1264,12 @@ class addUserGenre
         $query = "SELECT genreID FROM genre WHERE genreName = ?;";
         $stmt = $this->connection->prepare($query);
         $stmt->bindParam(1, $this->genreName);
-        $check = $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
+        try {
+            $check = $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
+        }catch (PDOException $e)
+        {
+            return false;
+        }
         $genreID = null;
         if($stmt->rowCount() > 0)
         {
@@ -1211,7 +1289,12 @@ class addUserGenre
         $stmt->username = filter_var($this->username, FILTER_SANITIZE_STRING);
         $stmt->bindParam(":username", $this->username);
         $stmt->bindParam(":genreID", $genreID);
-        $check = $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
+        try {
+            $check = $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
+        }catch (PDOException $e)
+        {
+            return false;
+        }
         return $check;
     }
 }
@@ -1241,7 +1324,13 @@ class getRecommendations
                     ORDER BY COUNT(belongs.media_ID) DESC;";
         $stmt = $this->connection->prepare($query);
         $stmt->bindParam(1, $this->username);
-        $check = $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
+        try {
+            $check = $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
+        }
+        catch (PDOException $e)
+        {
+            return false;
+        }
         if($check)
             return $stmt;
         else
@@ -1265,14 +1354,19 @@ class addWishlist
     {
         $query = "INSERT INTO wants_to_watch (username, mediaID) VALUES (:username,:media_id);";
         $stmt = $this->connection->prepare($query);
-        $this->media_id = filter_var($this->media_id, FILTER_VALIDATE_INT);
+        $this->media_id = filter_var($this->media_id, FILTER_SANITIZE_NUMBER_INT);
         $this->media_id = intval(htmlspecialchars(strip_tags($this->media_id)));
         $this->username = filter_var($this->username, FILTER_SANITIZE_STRING);
         $this->username = htmlspecialchars(strip_tags($this->username));
 
         $stmt->bindParam(":media_id", $this->media_id);
         $stmt->bindParam(":username", $this->username);
-        $check = $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
+        try {
+            $check = $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
+        }catch (PDOException $e)
+        {
+            return false;
+        }
         return $check;
     }
 
@@ -1283,7 +1377,12 @@ class addWishlist
         $this->title = filter_var($this->title, FILTER_SANITIZE_STRING);
         $this->title = htmlspecialchars(strip_tags($this->title));
         $stmt->bindParam(":title", $this->title);
-        $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
+        try {
+            $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
+        }catch (PDOException $e)
+        {
+            return false;
+        }
         $r = $stmt->fetch(PDO::FETCH_ASSOC);
         if(isset($r["media_ID"]))
             $this->media_id = $r["media_ID"];
@@ -1293,13 +1392,17 @@ class addWishlist
 //        echo($this->media_id . " " . $this->username);
         $query = "INSERT INTO wants_to_watch (username, mediaID) VALUES (:username,:media_id);";
         $stmt = $this->connection->prepare($query);
-        $this->media_id = filter_var($this->media_id, FILTER_VALIDATE_INT);
+        $this->media_id = filter_var($this->media_id, FILTER_SANITIZE_NUMBER_INT);
         $this->media_id = intval(htmlspecialchars(strip_tags($this->media_id)));
         $this->username = filter_var($this->username, FILTER_SANITIZE_STRING);
         $this->username = htmlspecialchars(strip_tags($this->username));
         $stmt->bindParam(":username", $this->username);
         $stmt->bindParam(":media_id", $this->media_id);
-        $check = $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
+        try {
+            $check = $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
+        } catch (PDOException $e) {
+            return false;
+        }
         return $check;
     }
 }
@@ -1314,9 +1417,14 @@ class getTitle
     public $order;
     public $search;
     public $return;
-
-
-
+    public $minRating;
+    public $maxRating;
+    public $minReleaseDate;
+    public $maxReleaseDate;
+    public $minDuration;
+    public $maxDuration;
+    public $minSeasons;
+    public $maxSeasons;
 
     public $search_media_id, $search_title, $search_genre, $search_rating, $search_content_rating, $search_release_date, $search_type, $search_cast, $search_director, $search_writer;
 
@@ -1324,6 +1432,8 @@ class getTitle
     public function __construct($db)
     {
         $this->connection = $db;
+
+        $this->return = $this->search = $this->limit = $this->sort = $this->order = $this->search_media_id = $this->search_title = $this->search_genre = $this->search_rating = $this->search_content_rating = $this->search_release_date = $this->search_type = $this->search_cast = $this->search_director = $this->search_writer = $this->minRating = $this->maxRating = $this->minReleaseDate = $this->maxReleaseDate = $this->minDuration = $this->maxDuration = $this->minSeasons = $this->maxSeasons = null;
     }
 
 
@@ -1332,16 +1442,8 @@ class getTitle
 
     public function Return_Parameters()
     {
-        if($this->return === "*")
-        {
-            $this->query = "SELECT * FROM( SELECT e.media_ID, title, release_Date, description, content_rating, rating, GROUP_CONCAT(DISTINCT g.genreName) AS Genre, GROUP_CONCAT(DISTINCT CASE WHEN c.role = \'actor\' THEN c.name END) AS CAST, GROUP_CONCAT(DISTINCT CASE WHEN c.role = \'director\' THEN c.name END) AS DIRECTOR, GROUP_CONCAT(DISTINCT CASE WHEN c.role = \'writer\' THEN c.name END) AS WRITER FROM belongs AS b INNER JOIN entertainment_content AS e ON e.media_ID = b.media_ID LEFT JOIN genre AS g ON g.genreID = b.genreID INNER JOIN hoopdatabase.involved_in i on e.media_ID = i.media_ID LEFT JOIN hoopdatabase.crew c on i.crewID = c.crewID GROUP BY e.media_ID, i.media_ID ) AS list";
-        }
-        else
-        {
-            $this->query .= "SELECT ";
-            $this->query .= join(", ", $this->return);
-            $this->query .= " FROM(
-    SELECT e.media_ID, title, release_Date, description, content_rating, rating,
+        $v1 = "SELECT list.media_ID, title, release_Date, description, content_rating, rating, poster_Url, Genre, CAST, DIRECTOR, WRITER, duration, seasons FROM (
+    SELECT e.media_ID, title, release_Date, description, content_rating, rating, poster_Url,
            GROUP_CONCAT(DISTINCT g.genreName) AS Genre,
            GROUP_CONCAT(DISTINCT CASE WHEN c.role = 'actor' THEN c.name END) AS CAST,
            GROUP_CONCAT(DISTINCT CASE WHEN c.role = 'director' THEN c.name END) AS DIRECTOR,
@@ -1349,50 +1451,61 @@ class getTitle
     FROM belongs AS b
     INNER JOIN entertainment_content AS e ON e.media_ID = b.media_ID
     LEFT JOIN genre AS g ON g.genreID = b.genreID
-    INNER JOIN hoopdatabase.involved_in i on e.media_ID = i.media_ID
-    LEFT JOIN hoopdatabase.crew c on i.crewID = c.crewID
+    INNER JOIN involved_in i on e.media_ID = i.media_ID
+    LEFT JOIN crew c on i.crewID = c.crewID
     GROUP BY e.media_ID, i.media_ID
-) AS list ";
+) AS list
+LEFT JOIN movie ON list.media_ID = movie.media_ID
+LEFT JOIN tvshow ON list.media_ID = tvshow.media_ID";
+
+        if($this->return === "*")
+        {
+            $this->query = $v1;
+        }
+        else
+        {
+            $this->query .= "SELECT ";
+            $this->query .= join(", ", $this->return);
+            $this->query .= " FROM (
+    SELECT e.media_ID, title, release_Date, description, content_rating, rating, poster_Url,
+           GROUP_CONCAT(DISTINCT g.genreName) AS Genre,
+           GROUP_CONCAT(DISTINCT CASE WHEN c.role = 'actor' THEN c.name END) AS CAST,
+           GROUP_CONCAT(DISTINCT CASE WHEN c.role = 'director' THEN c.name END) AS DIRECTOR,
+           GROUP_CONCAT(DISTINCT CASE WHEN c.role = 'writer' THEN c.name END) AS WRITER
+    FROM belongs AS b
+    INNER JOIN entertainment_content AS e ON e.media_ID = b.media_ID
+    LEFT JOIN genre AS g ON g.genreID = b.genreID
+    INNER JOIN involved_in i on e.media_ID = i.media_ID
+    LEFT JOIN crew c on i.crewID = c.crewID
+    GROUP BY e.media_ID, i.media_ID
+) AS list
+LEFT JOIN movie ON list.media_ID = movie.media_ID
+LEFT JOIN tvshow ON list.media_ID = tvshow.media_ID ";
         }
     }
 
 
 
-    public function getTitle()
-    {
-        $query = "SELECT * FROM entertainment_content WHERE title = :title;";
-        $stmt = $this->connection->prepare($query);
-        $this->title = filter_var($this->title, FILTER_SANITIZE_STRING);
-        $this->title = htmlspecialchars(strip_tags($this->title));
-        $stmt->bindParam(":title", $this->title);
-        $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
-        return $stmt;
-    }
-
 
 
     public function executeQuery()
     {
-        echo($this->query);
+//        echo($this->query);
         $stmt = $this->connection->prepare($this->query);
 
-        $this->limit = filter_var($this->limit, FILTER_VALIDATE_INT);
+        $this->limit = filter_var($this->limit, FILTER_SANITIZE_NUMBER_INT);
         $this->limit = intval(htmlspecialchars(strip_tags($this->limit)));
-        $this->sort = filter_var($this->sort, FILTER_SANITIZE_STRING);
-        $this->sort = htmlspecialchars(strip_tags($this->sort));
-        $this->order = filter_var($this->order, FILTER_SANITIZE_STRING);
-        $this->order = htmlspecialchars(strip_tags($this->order));
         $this->search = filter_var($this->search, FILTER_SANITIZE_STRING);
         $this->search = htmlspecialchars(strip_tags($this->search));
         $this->search_title = filter_var($this->search_title, FILTER_SANITIZE_STRING);
         $this->search_title = htmlspecialchars(strip_tags($this->search_title));
         $this->search_genre = filter_var($this->search_genre, FILTER_SANITIZE_STRING);
         $this->search_genre = htmlspecialchars(strip_tags($this->search_genre));
-        $this->search_rating = filter_var($this->search_rating, FILTER_VALIDATE_INT);
+        $this->search_rating = filter_var($this->search_rating, FILTER_SANITIZE_NUMBER_INT);
         $this->search_rating = intval(htmlspecialchars(strip_tags($this->search_rating)));
         $this->search_content_rating = filter_var($this->search_content_rating, FILTER_SANITIZE_STRING);
         $this->search_content_rating = htmlspecialchars(strip_tags($this->search_content_rating));
-        $this->search_release_date = filter_var($this->search_release_date, FILTER_VALIDATE_INT);
+        $this->search_release_date = filter_var($this->search_release_date, FILTER_SANITIZE_NUMBER_INT);
         $this->search_release_date = intval(htmlspecialchars(strip_tags($this->search_release_date)));
         $this->search_type = filter_var($this->search_type, FILTER_SANITIZE_STRING);
         $this->search_type = htmlspecialchars(strip_tags($this->search_type));
@@ -1402,32 +1515,68 @@ class getTitle
         $this->search_director = htmlspecialchars(strip_tags($this->search_director));
         $this->search_writer = filter_var($this->search_writer, FILTER_SANITIZE_STRING);
         $this->search_writer = htmlspecialchars(strip_tags($this->search_writer));
-        $this->search_media_id = filter_var($this->search_media_id, FILTER_VALIDATE_INT);
+        $this->search_media_id = filter_var($this->search_media_id, FILTER_SANITIZE_NUMBER_INT);
         $this->search_media_id = intval(htmlspecialchars(strip_tags($this->search_media_id)));
+        $this->minRating = filter_var($this->minRating, FILTER_SANITIZE_NUMBER_INT);
+        $this->minRating = intval(htmlspecialchars(strip_tags($this->minRating)));
+        $this->maxRating = filter_var($this->maxRating, FILTER_SANITIZE_NUMBER_INT);
+        $this->maxRating = intval(htmlspecialchars(strip_tags($this->maxRating)));
+        $this->minReleaseDate = filter_var($this->minReleaseDate, FILTER_SANITIZE_NUMBER_INT);
+        $this->minReleaseDate = intval(htmlspecialchars(strip_tags($this->minReleaseDate)));
+        $this->maxReleaseDate = filter_var($this->maxReleaseDate, FILTER_SANITIZE_NUMBER_INT);
+        $this->maxReleaseDate = intval(htmlspecialchars(strip_tags($this->maxReleaseDate)));
+        $this->minDuration = filter_var($this->minDuration, FILTER_SANITIZE_NUMBER_INT);
+        $this->minDuration = intval(htmlspecialchars(strip_tags($this->minDuration)));
+        $this->maxDuration = filter_var($this->maxDuration, FILTER_SANITIZE_NUMBER_INT);
 
-//        echo($this->return);
-//        echo ($this->limit);
-//        echo ($this->sort);
-//        echo($this->order);
-//        echo($this->search_content_rating);
-//        echo($this->search_release_date);
+
+        if($this->limit != null)
+            $stmt->bindValue(":limit", $this->limit, PDO::PARAM_INT);
+        if($this->search_title != null)
+            $stmt->bindValue(":search_title", $this->search_title, PDO::PARAM_STR);
+        if($this->search_genre != null)
+            $stmt->bindValue(":search_genre", $this->search_genre, PDO::PARAM_STR);
+        if($this->search_rating != null)
+            $stmt->bindValue(":search_rating", $this->search_rating, PDO::PARAM_INT);
+        if($this->search_content_rating != null)
+            $stmt->bindValue(":search_content_rating", $this->search_content_rating, PDO::PARAM_STR);
+        if($this->search_release_date != null)
+            $stmt->bindValue(":search_release_date", $this->search_release_date, PDO::PARAM_INT);
+        if($this->search_cast != null)
+            $stmt->bindValue(":search_cast", $this->search_cast, PDO::PARAM_STR);
+        if($this->search_director != null)
+            $stmt->bindValue(":search_director", $this->search_director, PDO::PARAM_STR);
+        if($this->search_writer != null)
+            $stmt->bindValue(":search_writer", $this->search_writer, PDO::PARAM_STR);
+        if($this->search_media_id != null)
+            $stmt->bindValue(":search_media_id", $this->search_media_id, PDO::PARAM_INT);
+        if($this->minRating != null)
+            $stmt->bindValue(":minRating", $this->minRating, PDO::PARAM_INT);
+        if($this->maxRating != null)
+            $stmt->bindValue(":maxRating", $this->maxRating, PDO::PARAM_INT);
+        if($this->minReleaseDate != null)
+            $stmt->bindValue(":minReleaseDate", $this->minReleaseDate, PDO::PARAM_INT);
+        if($this->maxReleaseDate != null)
+            $stmt->bindValue(":maxReleaseDate", $this->maxReleaseDate, PDO::PARAM_INT);
+        if($this->minDuration != null)
+            $stmt->bindValue(":minDuration", $this->minDuration, PDO::PARAM_INT);
+        if($this->maxDuration != null)
+            $stmt->bindValue(":maxDuration", $this->maxDuration, PDO::PARAM_INT);
+        if($this->minSeasons != null)
+            $stmt->bindValue(":minSeasons", $this->minSeasons, PDO::PARAM_INT);
+        if($this->maxSeasons != null)
+            $stmt->bindValue(":maxSeasons", $this->maxSeasons, PDO::PARAM_INT);
 
 
-        $stmt->bindParam(":limit", $this->limit);
-        $stmt->bindParam(":sort", $this->sort);
-        $stmt->bindParam(":order", $this->order);
-        $stmt->bindParam(":search_title", $this->search_title);
-        $stmt->bindParam(":search_genre", $this->search_genre);
-        $stmt->bindParam(":search_rating", $this->search_rating);
-        $stmt->bindParam(":search_content_rating", $this->search_content_rating);
-        $stmt->bindParam(":search_release_date", $this->search_release_date);
-        $stmt->bindParam(":search_type", $this->search_type);
-        $stmt->bindParam(":search_cast", $this->search_cast);
-        $stmt->bindParam(":search_director", $this->search_director);
-        $stmt->bindParam(":search_writer", $this->search_writer);
-        $stmt->bindParam(":search_media_id", $this->search_media_id);
 
-        $stmt->execute();
+        try {
+            $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
+        }
+        catch (PDOException $e)
+        {
+//            echo("Error: " . $e->getMessage());
+            return false;
+        }
         return $stmt;
     }
 
@@ -1435,6 +1584,47 @@ class getTitle
     {
         $this->query .= " WHERE ";
     }
+
+    public function MinRating()
+    {
+        $this->query .= " rating >= :minRating ";
+    }
+
+    public function MaxRating()
+    {
+        $this->query .= " rating <= :maxRating ";
+    }
+
+    public function MinReleaseDate()
+    {
+        $this->query .= " release_date >= :minReleaseDate ";
+    }
+
+    public function MaxReleaseDate()
+    {
+        $this->query .= " release_date <= :maxReleaseDate ";
+    }
+
+    public function MinDuration()
+    {
+        $this->query .= " duration >= :minDuration ";
+    }
+
+    public function MaxDuration()
+    {
+        $this->query .= " duration <= :maxDuration ";
+    }
+
+    public function MinSeasons()
+    {
+        $this->query .= " seasons >= :minSeasons ";
+    }
+
+    public function MaxSeasons()
+    {
+        $this->query .= " seasons <= :maxSeasons ";
+    }
+
 
     public function And()
     {
@@ -1448,12 +1638,12 @@ class getTitle
 
     public function Search_genre()
     {
-        $this->query .= " Genre = '%:search_genre%' ";
+        $this->query .= " Genre LIKE :search_genre ";
     }
 
     public function Search_cast()
     {
-        $this->query .= " CAST = '%:search_cast%' ";
+        $this->query .= " CAST LIKE :search_cast ";
     }
 
     public function Search_media_id()
@@ -1463,12 +1653,12 @@ class getTitle
 
     public function Search_director()
     {
-        $this->query .= " DIRECTOR = '%:search_director%' ";
+        $this->query .= " DIRECTOR LIKE :search_director ";
     }
 
     public function Search_writer()
     {
-        $this->query .= " WRITER = '%:search_writer%' ";
+        $this->query .= " WRITER = :search_writer ";
     }
 
     public function Search_rating()
@@ -1488,7 +1678,10 @@ class getTitle
 
     public function Search_type()
     {
-        $this->query .= " type = :search_type ";
+        if($this->search_type == "movie")
+            $this->query .= " seasons IS NULL ";
+        else if($this->search_type == "tvshow")
+            $this->query .= " duration IS NULL ";
     }
 
     public function Limit()
@@ -1503,7 +1696,11 @@ class getTitle
 
     public function SortAndOrder()
     {
-        $this->query .= " ORDER BY : sort :order ";
+        $this->sort = filter_var($this->sort, FILTER_SANITIZE_STRING);
+        $this->sort = htmlspecialchars(strip_tags($this->sort));
+        $this->order = filter_var($this->order, FILTER_SANITIZE_STRING);
+        $this->order = htmlspecialchars(strip_tags($this->order));
+        $this->query .= " ORDER BY " . $this->sort ." " . $this->order ." ";
     }
 
 

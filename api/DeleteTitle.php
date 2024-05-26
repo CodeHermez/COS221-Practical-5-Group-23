@@ -43,8 +43,8 @@ if($_SERVER['REQUEST_METHOD'] === "DELETE")
     }
     else
     {
-        echo json_encode(array("status" => "error", "timestamp" => time(), "data" => "Title could not be deleted"));
-        header("HTTP/1.1 400 Bad Request");
+        echo json_encode(array("status" => "error", "timestamp" => time(), "data" => "Title not deleted"));
+        header("HTTP/1.1 500 Internal Server Error");
         return;
     }
 }

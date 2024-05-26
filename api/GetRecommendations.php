@@ -26,7 +26,7 @@ if($_SERVER['REQUEST_METHOD'] === "GET")
         return;
     }
 
-if($_GET['username'] === "")
+    if($_GET['username'] === "")
     {
         echo json_encode(array("status" => "error", "timestamp" => time(), "data" => "Username should not be empty"));
         header("HTTP/1.1 400 Bad Request");
@@ -35,6 +35,12 @@ if($_GET['username'] === "")
 
     $usr_login->username = $_GET['username'];
     $rst = $usr_login->getRecommendations();
+    if(!$rst)
+    {
+        echo json_encode(array("status" => "error", "timestamp" => time(), "data" => "Error occurred while fetching data"));
+        header("HTTP/1.1 500 Internal Server Error");
+        return;
+    }
     $size = $rst->rowCount();
 
     if($size > 0)

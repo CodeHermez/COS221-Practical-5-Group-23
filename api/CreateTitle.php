@@ -19,10 +19,10 @@ if($_SERVER['REQUEST_METHOD'] === "POST")
 {
     $create = new createTitle($dbc);
 
-    if(isset($data->title) && isset($data->description) && isset($data->genre) && isset($data->rating) && isset($data->content_rating) && isset($data->release_date) && (isset($data->duration) || isset($data->seasons)) && isset($data->crew) && isset($data->type))
+    if(isset($data->title) && isset($data->description) && isset($data->genre) && isset($data->rating) && isset($data->content_rating) && isset($data->release_date) && (isset($data->duration) || isset($data->seasons)) && isset($data->crew) && isset($data->type) && isset($data->image))
     {
 
-        if($data->title === "" && $data->description === "" && $data->genre === "" && $data->rating === "" && $data->content_rating === "" && $create->release_date === "" && $data->duration === "" && $data->seasons === "" && $data->type === "")
+        if($data->title === "" && $data->description === "" && $data->genre === "" && $data->rating === "" && $data->content_rating === "" && $create->release_date === "" && $data->duration === "" && $data->seasons === "" && $data->type === "" && $data->image === "")
         {
             echo json_encode(array("status" => "error", "timestamp" => time(), "data" => "Fields should not be left blank"));
             header("HTTP/1.1 400 Bad Request");
@@ -31,6 +31,7 @@ if($_SERVER['REQUEST_METHOD'] === "POST")
         $create->title = $data->title;
         $create->description = $data->description;
         $create->genre = $data->genre;
+        $create->image_url = $data->image;
         if(($data->rating < 0 || $data->rating > 5))
         {
             echo json_encode(array("status" => "error", "timestamp" => time(), "data" => "Rating must be between 0 and 5"));
@@ -109,8 +110,8 @@ if($_SERVER['REQUEST_METHOD'] === "POST")
         }
         else
         {
-            echo json_encode(array("status" => "error", "timestamp" => time(), "data" => "Title not created"));
-            header("HTTP/1.1 400 Bad Request");
+            echo json_encode(array("status" => "error", "timestamp" => time(), "data" => "Title could not be created"));
+            header("HTTP/1.1 500 Internal Server Error");
         }
         return;
     }
