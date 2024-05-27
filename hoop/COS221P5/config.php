@@ -2,27 +2,27 @@
 class Database{
 
 //wheatley host
-//    private $host = "wheatley.cs.up.ac.za";
+  private $host = "wheatley.cs.up.ac.za";
 //localhost
-    private $host = "localhost";
+    // private $host = "localhost";
 
 
 //wheatley user
-//    private $user = "uXXXXXXXXXX";
+    private $user = "uXXXXXXXXXX";
 //localhost user
-    private $user = "root";
+    // private $user = "root";
 
 
     // wheatley password
-//    private $pass = "ABCDEFGHIJKLMENOPQRSTUVWZYZ";
+    private $pass = "2CZDPF7LRNV6ELPTJRYFCC66TUVWK7L6";
     // localhost password
-    private $pass = "";
+    // private $pass = "";
 
 
     // wheately database name
-//    private $db_name = "HOOT_MOVIES";
+   private $db_name = "u22659812_hoop";
 // localhost database name
-    private $db_name = "hoop";
+    // private $db_name = "hoop";
 
 
     private $connection;

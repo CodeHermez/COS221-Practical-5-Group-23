@@ -22,15 +22,27 @@ document.addEventListener('DOMContentLoaded', function () {
           body: JSON.stringify(formData),
         });
 
-        
         if(response.ok) {
-          const text = await response.text();
-        console.log('Response body:', text);
-          const result = await response.json();
-          alert('Registration successful: ' + result.message);
+          try {
+            const result = JSON.parse(text); // Parse the text as JSON
+            window.location.href = 'login.php';
+            alert('Registration successful: ' + result.data.username);
+          } catch (jsonError) {
+            console.error('Error parsing JSON:', jsonError);
+            alert('Registration successful, but the response is not valid JSON.');
+          }
+          // const result = await response.json();
+          // alert('Registration successful: ' + result.message);
         } else {
-          const error = await response.json();
-          alert('Registration failed: ' + error.message);
+          // const error = await response.json();
+          // alert('Registration failed: ' + error.message);
+          try {
+            const error = JSON.parse(text); // Parse the text as JSON
+            alert('Registration failed: ' + error.data);
+          } catch (jsonError) {
+            console.error('Error parsing JSON:', jsonError);
+            alert('Registration failed, and the response is not valid JSON.');
+          }
         }
       } catch (error) {
         console.error('Error:', error);
