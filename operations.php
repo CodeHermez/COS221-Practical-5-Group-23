@@ -1724,7 +1724,7 @@ class getWishlist
 
     public function getWishlist()
     {
-        $query = "SELECT media_ID title, release_Date, description, content_rating, rating, poster_Url FROM wants_to_watch
+        $query = "SELECT media_ID, title, release_Date, description, content_rating, rating, poster_Url FROM wants_to_watch
                     INNER JOIN entertainment_content ON wants_to_watch.mediaID = entertainment_content.media_ID
                     WHERE username = :username;";
         $stmt = $this->connection->prepare($query);

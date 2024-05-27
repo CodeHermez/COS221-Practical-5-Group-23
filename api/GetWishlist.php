@@ -38,6 +38,7 @@ if($_SERVER['REQUEST_METHOD'] === "GET"){
         while($r = $rst->fetch(PDO::FETCH_ASSOC)){
             extract($r);
             $item = array();
+            $item["id"] = $media_ID;
             $item["title"] = $title;
             $item["release_Date"] = $release_Date;
             $item["description"] = $description;
