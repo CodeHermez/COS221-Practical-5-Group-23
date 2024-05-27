@@ -106,7 +106,7 @@ class Register{ //user input
         $query = 'SELECT username, email FROM user WHERE username=? OR email=?';
         $stmt = $this->connection->prepare($query);
 
-        //if stmt has no results then the user does not exist yet 
+        //if stmt has no results then the user does not exist yet
 
         $stmt->bindParam(1, $username, PDO::PARAM_STR);
         $stmt->bindParam(2, $email, PDO::PARAM_STR);
@@ -1709,4 +1709,37 @@ LEFT JOIN tvshow ON list.media_ID = tvshow.media_ID ";
         $this->query .= ";";
     }
 
+}
+
+
+
+class getWishlist
+{
+    private $connection;
+    public $username;
+    public function __construct($db)
+    {
+        $this->connection = $db;
+    }
+
+    public function getWishlist()
+    {
+        $query = "SELECT media_ID title, release_Date, description, content_rating, rating, poster_Url FROM wants_to_watch
+                    INNER JOIN entertainment_content ON wants_to_watch.mediaID = entertainment_content.media_ID
+                    WHERE username = :username;";
+        $stmt = $this->connection->prepare($query);
+        $this->username = filter_var($this->username, FILTER_SANITIZE_STRING);
+        $this->username = htmlspecialchars(strip_tags($this->username));
+        $stmt->bindParam(":username", $this->username);
+        try {
+            $check = $stmt->execute() or die("Error: " . $stmt->errorInfo()[2]);
+        }catch (PDOException $e)
+        {
+            return false;
+        }
+        if($check)
+            return $stmt;
+        else
+            return false;
+    }
 }
