@@ -22,7 +22,7 @@ Note: that duration is in minutes so it's an integer and release_date is the yea
   
   Note: PHP does not support the async function (I could've looked up how to do it but nako⏳) so making a request with a limit of 100  will be at the cost of your own time, I suggest keeping the limit $[1,30]$.
 
-- `sort`(Array<string>): The results can be sorted by any of the following attributes: `['media_ID', 'title, 'release_Date', 'description', 'content_rating', 'rating', 'poster_Url', 'Genre', 'CAST', 'DIRECTOR', 'WRITER', 'duration', 'seasons']`
+- `sort`(string): The results can be sorted by any of the following attributes: `['media_ID', 'title, 'release_Date', 'description', 'content_rating', 'rating', 'poster_Url', 'Genre', 'CAST', 'DIRECTOR', 'WRITER', 'duration', 'seasons']`
   
   - `order` (string): The results can be ordered by "ASC" or "DESC" for ascending or descending respectively.
     
@@ -60,9 +60,9 @@ Note: that duration is in minutes so it's an integer and release_date is the yea
     
     Note: You cannot search for "type":"movie" and also have a `maxseasons` or `minseasons` and also for "type":"tvshow"" you can't have a `minduration` or a `maxduration` as this will through a bad request(400) cause that's what distinguishes a movie from a tv show. but you can have a duration or a season search if you do have the opposing type or do not have a type search at all and this will still be valid.
   
-  - `minrating` (int): Retrieves titles based on if their ratings are greater than or equal to minrating $[minrating,\infty]$
+  - `minrating` (int): Retrieves titles based on if their ratings are greater than or equal to minrating $[minrating,5]$
   
-  - `maxrating`` (int): Retrieves titles based on if their ratings are less than or equal to maxrating $[0,maxrating]$
+  - `maxrating` (int): Retrieves titles based on if their ratings are less than or equal to maxrating $[0,maxrating]$
   
   - `minreleasedate` (int): Retrieves titles based on if their release date is later than or equal to minreleasedate $[minreleasedate,\infty]$
   
@@ -74,9 +74,7 @@ Note: that duration is in minutes so it's an integer and release_date is the yea
 {
   "return": "string or Array<string>", // The string "*" or an array of specific fields to return
   "limit": "integer", // A number between 1 and 100 indicating the number of results to return
-  "sort": [
-    "string"
-  ], // An array of fields to sort by
+  "sort": "string", // An string to sort by that field
   "order": "string", // "ASC" or "DESC" indicating the sort order
   "search": {
     "type": "string", // Must be "tvshow" or "movie"
