@@ -26,13 +26,13 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
     .then(data => {
       console.log('Response data:', data); // Debugging statement
       if (data.status === 'success') {
-        alert('Login successful!');
+        //alert('Login successful!');
         // Redirect to home page
         window.location.href= 'index.php';
       } else {
         alert('Login failed: ' + data.data || "Unknown error");
         //redirect back to login.
-        window.location.href = 'registerpage.php';
+        window.location.href = 'loginpage.php';
       }
     })
     .catch((error) => {
