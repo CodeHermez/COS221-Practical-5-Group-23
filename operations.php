@@ -43,7 +43,7 @@ class Register{ //user input
             return createJSONResponse("error", "All fields are required.");
         }
 
-        //check if email and/or username exist
+        // check if email and/or username exist
         $exists = $this->exists($this->username,  $this->email);
         if($exists['exists']==true){
             http_response_code(400);
@@ -107,55 +107,56 @@ class Register{ //user input
         $stmt = $this->connection->prepare($query);
 
         //if stmt has no results then the user does not exist yet
+        try {
+            $stmt->bindParam(1, $username, PDO::PARAM_STR);
+            $stmt->bindParam(2, $email, PDO::PARAM_STR);
+            if($stmt->execute()){
+                //if no matches return false
+                if($stmt->rowCount() == 0){
+                    unset($stmt);
+                    return [
+                        "exists" => false,
+                        "message" => ""
+                    ];
+                }
 
-        $stmt->bindParam(1, $username, PDO::PARAM_STR);
-        $stmt->bindParam(2, $email, PDO::PARAM_STR);
-        if($stmt->execute()){
-            //if no matches return false
-            if($stmt->rowCount() == 0){
-                unset($stmt);
-                return [
-                    "exists" => false,
-                    "message" => ""
-                ];
+                $results = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                //check if only username matched
+                if($results['username']===$username && $results['email']!=$email){
+                    unset($stmt);
+                    return [
+                        "exists" => true,
+                        "message" => "Username is taken."
+                    ];
+                }
+
+                //check if only email matched
+                if($results['username']!=$username && $results['email']===$email){
+                    unset($stmt);
+                    return [
+                        "exists" => true,
+                        "message" => "Email is in use."
+                    ];
+                }
+
+                //check if both matched
+                if($results['username']===$username && $results['email']===$email){
+                    unset($stmt);
+                    return [
+                        "exists" => true,
+                        "message" => "Username and email are in use."
+                    ];
+                }
             }
-
-            $results = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            //check if only username matched
-            if($results['username']===$username && $results['email']!=$email){
-                unset($stmt);
-                return [
-                    "exists" => true,
-                    "message" => "Username is taken."
-                ];
-            }
-
-            //check if only email matched
-            if($results['username']!=$username && $results['email']===$email){
-                unset($stmt);
-                return [
-                    "exists" => true,
-                    "message" => "Email is in use."
-                ];
-            }
-
-            //check if both matched
-            if($results['username']===$username && $results['email']===$email){
-                unset($stmt);
-                return [
-                    "exists" => true,
-                    "message" => "Username and email are in use."
-                ];
-            }
-        }
-        else{
-            unset($stmt);
+        } catch (PDOException $e) {
             return [
-                "exists" => "",
-                "message" => ""
+                "exists" => true, //just to get the error message to send through
+                "message" => $e->getMessage()
             ];
         }
+        
+        
     }
 
     private function valid($age, $email, $password){
@@ -309,6 +310,7 @@ class Login{ //user input
     private $connection;
     private $username;
     private $profilePic;
+    private $type;
 
     /*email
     password
@@ -335,7 +337,7 @@ class Login{ //user input
             ];
         }
 
-        $query = 'SELECT salt, password, username, profile_picture, name FROM user WHERE email=?';
+        $query = 'SELECT salt, password, username, profile_picture, name,type FROM user WHERE email=?';
         $stmt = $this->connection->prepare($query);
         $stmt->bindParam(1, $email,  PDO::PARAM_STR);
 
@@ -351,6 +353,7 @@ class Login{ //user input
                 if($dbPassword==$hashedPassword){
                     $this->username = $results['username'];
                     $this->profilePic = $results['profile_picture'];
+                    $this->type = $results['type'];
                     $status = true;
                 }
                 else{
@@ -397,7 +400,8 @@ class Login{ //user input
                 $status = "success";
                 $data = [
                     "username" => $this->username,
-                    "profile_picture" => (int) $this->profilePic
+                    "profile_picture" => (int) $this->profilePic,
+                    "type" => $this->type
                 ];
                 http_response_code(200);
             }
@@ -905,7 +909,12 @@ class GetUsers{ //change to get
             $order = "ASC";
         }
 
-        $query = "SELECT name, email, username, age, profile_picture, created_at FROM user ORDER BY name $order LIMIT :limit";
+        $query = "SELECT name, email, username, age, profile_picture, created_at, type FROM user ORDER BY name $order";
+
+        if ($limit !== null) {
+            $query .= " LIMIT :limit";
+        }
+      
 
         $stmt = $this->connection->prepare($query);
 
@@ -924,7 +933,8 @@ class GetUsers{ //change to get
                     'username' => $user['username'],
                     'age' => (int) $user['age'],
                     'profile_picture' => (int) $user['profile_picture'],
-                    'created_at' => $user['created_at']
+                    'created_at' => $user['created_at'],
+                    'type' =>$user['type']
                 ];
             }
 
@@ -938,7 +948,7 @@ class GetUsers{ //change to get
     }
 
     public function getUser($username){
-        $query = "SELECT name, email, username, age, profile_picture, created_at FROM user WHERE username=?";
+        $query = "SELECT name, email, username, age, profile_picture, created_at, type FROM user WHERE username=?";
         $stmt = $this->connection->prepare($query);
         $stmt->bindParam(1, $username, PDO::PARAM_STR);
 
@@ -954,6 +964,7 @@ class GetUsers{ //change to get
 
             $user['age'] = (int) $user['age'];
             $user['profile_picture'] = (int) $user['profile_picture'];
+            $user['type'] = $user['type'];
 
             http_response_code(200);
             return createJSONResponse("success", [$user]);
@@ -965,31 +976,173 @@ class GetUsers{ //change to get
 
 }
 
-class ChangeProfilePicture{
+
+class UpdateProfile{ //email, age, profile picture, username
     private $connection;
 
     public function __construct($db){
         $this->connection = $db;
     }
 
-    public function changeProfile($data){
-        $query = "UPDATE user SET profile_picture = ? WHERE username = ?";
-        $stmt = $this->connection->prepare($query);
-        $stmt->bindParam(1, $data['profile_picture'], PDO::PARAM_INT);
-        $stmt->bindParam(2, $_SESSION['username'], PDO::PARAM_STR);
+    
+    private function validUser($username){
+        // $flag = false; //assume user DNE
+        // $response="";
 
+        $query = 'SELECT username FROM user WHERE username=?';
+        $stmt = $this->connection->prepare($query);
+
+        //if stmt has no results then the user does not exist yet
+
+        $stmt->bindParam(1, $username, PDO::PARAM_STR);
         try {
-            $stmt->execute();
+            if($stmt->execute()){
+                //if no matches return false
+                if($stmt->rowCount() == 0){
+                    unset($stmt);
+                    return [
+                        "exists" => false,
+                        "message" => ""
+                    ];
+                }
+    
+                $results = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+                //check if username matched
+                if($results['username']===$username){
+                    unset($stmt);
+                    return [
+                        "exists" => true,
+                        "message" => "Username is taken."
+                    ];
+                }
+            }
+        } catch (PDOException $e) {
             unset($stmt);
+            http_response_code(500);
+            return [
+                "exists" => true,
+                "message" => $e->getMessage()
+            ];     
+        }
+    }
+
+    private function validEmail($email, $username){
+        //check that the structure is valid - 
+        if(!filter_var($email, FILTER_VALIDATE_EMAIL)){
+            return[
+                "valid" => false,
+                "message" => "Invalid structure for email."
+            ];
+        }else{//valid structure, check if it is in use
+            $query = 'SELECT email FROM user WHERE username=?';
+            $stmt = $this->connection->prepare($query);
+            $stmt->bindParam(1, $username, PDO::PARAM_STR);
+            try {
+                if($stmt->rowCount() == 0){
+                    unset($stmt);
+                    return [
+                        "valid" => true,
+                        "message" => "Email is valid."
+                    ];    
+                }
+    
+                $results = $stmt->fetch(PDO::FETCH_ASSOC);
+                if($results['email']===$email){
+                    unset($stmt);
+                    return [
+                        "valid" => false,
+                        "message" => "Email is in use."
+                    ];
+                }
+            } catch (PDOException $e) {
+                return [
+                    "valid" => false, //just to get error message to send through
+                    "message" => $e->getMessage() 
+                ];
+            }
+            
+        }
+        
+    }
+
+    public function changeProfile($data){
+        $age = filter_var($data['age'] ?? null, FILTER_VALIDATE_INT);
+        $email = filter_var($data['email'] ?? null, FILTER_SANITIZE_EMAIL);
+        $profile_picture = isset($data['profile_picture']) ? (int)$data['profile_picture'] : null;
+        $username = htmlspecialchars($data['username'] ?? null, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $oldusername =$_SESSION['username'];
+    
+        $fields = [];
+        $params = [];
+        if ($age !== null && $age !== false) {
+            if ($age < 13) {
+                return createJSONResponse("error", "Age must be greater than 13.");
+            }
+            $fields[] = "age = ?";
+            $params[] = $age;
+        }
+
+        if (isset($email) && $email !== "") {
+            $information = $this->validEmail($email, $_SESSION['username']);
+            if ($information['valid'] === true) {
+                $fields[] = "email = ?";
+                $params[] = $email;
+            } else {
+                return createJSONResponse("error", $information['message']);
+            }
+        }
+
+        if (isset($profile_picture) && $profile_picture!== "") {
+            $fields[] = "profile_picture = ?";
+            $params[] = $profile_picture;
+        }
+
+        if (isset($username) && $username!== "") {
+            $information = $this->validUser($username);
+
+            if ($information['exists'] === false) {
+                $fields[] = "username = ?";
+                $params[] = $username;
+            } else {
+                return createJSONResponse("error", $information['message']);
+            }
+        }
+    
+        // Construct the UPDATE query
+        $query = "UPDATE user SET " . implode(", ", $fields) . " WHERE username = ?";
+        $stmt = $this->connection->prepare($query);
+    
+        // Bind parameters
+        foreach ($params as $index => $param) {
+            $stmt->bindValue($index + 1, $param, is_int($param) ? PDO::PARAM_INT : PDO::PARAM_STR);
+        }
+        $stmt->bindValue(count($params) + 1, $oldusername, PDO::PARAM_STR);
+    
+        try {
+            // Execute the statement
+            $stmt->execute();
+            //if username was set, update the session variable to the new one
+            if (isset($username) && $username!== ""){
+                $_SESSION['username'] = $username;
+            }
+
+            unset($stmt);
+            
             http_response_code(200);
-            return createJSONResponse("success", $data['profile_picture']);
+            return createJSONResponse("success", "Profile updated successfully");
         } catch (PDOException $e) {
             unset($stmt);
             http_response_code(500);
             return createJSONResponse("error", $e->getMessage());
         }
     }
+    
 }
+
+
+
+
 
 
 
