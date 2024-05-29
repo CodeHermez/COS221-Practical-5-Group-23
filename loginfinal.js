@@ -27,6 +27,9 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
       console.log('Response data:', data); // Debugging statement
       if (data.status === 'success') {
         //alert('Login successful!');
+      // Store username and profile picture in local storage
+      localStorage.setItem('username', data.data.username);
+      localStorage.setItem('profile', data.data.profile_picture);
         // Redirect to home page
         window.location.href= 'index.php';
       } else {
