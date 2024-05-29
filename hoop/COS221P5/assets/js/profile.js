@@ -1,3 +1,11 @@
+function openForm() {
+    document.getElementById("myForm").style.display = "block";
+}
+
+function closeForm() {
+    document.getElementById("myForm").style.display = "none";
+}
+
 function updateTabContent(tabId, newContent) {
     $(tabId).html(newContent);
 }
@@ -178,6 +186,7 @@ $(document).ready(function () {
                 <img src="./assests/img/${friend.profile_picture}.png" alt="user" class="profile-photo-lg">
                 <div class="friend-info">
                   <a href="#" class="pull-right text-green remove-friend"  data-friend-id=${friend.friendID}>Remove Friend</a>
+                  <a href="#" class="pull-right text-green message-friend" data-friend-id="${friend.friendID}">Message</a>
                   <h5><a href="timeline.html" class="profile-link">${friend.friendID}</a></h5>
                 </div>
               </div>
@@ -187,6 +196,18 @@ $(document).ready(function () {
         });
 
         setRemoveFriendLinks();
+        setMessageLinks();
+    }
+
+    function setMessageLinks() {
+        const messageLinks = document.querySelectorAll('.message-friend');
+
+        messageLinks.forEach(link => {
+            link.addEventListener('click', function (event) {
+                event.preventDefault();
+                openForm();
+            });
+        });
     }
 
     function setRemoveFriendLinks() {
