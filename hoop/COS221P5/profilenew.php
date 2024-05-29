@@ -98,7 +98,7 @@
 
                     <li class="nav-item" role="presentation">
                         <button
-                            class="nav-link position-relative rounded-0 active d-flex align-items-center justify-content-center bg-transparent fs-3 py-6"
+                            class="nav-link position-relative rounded-0 active d-flex align-items-center justify-content-center bg-transparent fs-3 py-6 active"
                             id="pills-profile-tab" data-bs-toggle="pill" data-bs-target="#pills-profile" type="button"
                             role="tab" aria-controls="pills-profile" aria-selected="true">
                             <i class="fa fa-user me-2 fs-6"></i>
@@ -166,7 +166,7 @@
         <div class="tab-content" id="pills-tabContent">
 
             <!-- WatchList tab -->
-            <div class="tab-pane fade show active" id="pills-gallery" role="tabpanel"
+            <div class="tab-pane fade " id="pills-gallery" role="tabpanel"
                 aria-labelledby="pills-gallery-tab" tabindex="0">
 
                 <div class="d-sm-flex align-items-center justify-content-between mt-3 mb-4">
@@ -550,7 +550,7 @@
                                 <img src="https://www.bootdey.com/image/400x100/228B22" alt="profile-cover"
                                     class="img-responsive cover">
                                 <div class="card-info">
-                                    <img src="https://bootdey.com/img/Content/avatar/avatar4.png" alt="user"
+                                    <img src="./assets/img/cardColour.png" alt="user"
                                         class="profile-photo-lg">
                                     <div class="friend-info">
                                         <a href="#" class="pull-right text-green">My Friend</a>
@@ -563,7 +563,7 @@
 
                         <div class="col-md-4 col-sm-6">
                             <div class="friend-card">
-                                <img src="https://www.bootdey.com/image/400x100/20B2AA" alt="profile-cover"
+                                <img src="./assets/img/cardColour.png" alt="profile-cover"
                                     class="img-responsive cover">
                                 <div class="card-info">
                                     <img src="https://bootdey.com/img/Content/avatar/avatar3.png" alt="user"
@@ -579,7 +579,7 @@
 
                         <div class="col-md-4 col-sm-6">
                             <div class="friend-card">
-                                <img src="https://www.bootdey.com/image/400x100/FF4500" alt="profile-cover"
+                                <img src="./assets/img/cardColour.png" alt="profile-cover"
                                     class="img-responsive cover">
                                 <div class="card-info">
                                     <img src="https://bootdey.com/img/Content/avatar/avatar2.png" alt="user"
@@ -598,10 +598,10 @@
             </div>
 
             <!-- friends tab -->
-            <div class="tab-pane fade" id="pills-friends" role="tabpanel" aria-labelledby="pills-friends-tab"
+            <div class="tab-pane fade " id="pills-friends" role="tabpanel" aria-labelledby="pills-friends-tab"
                 tabindex="0">
                 <div class="friend-list">
-                    <div class="row">
+                    <div class="row" id="friend">
                         <div class="col-md-4 col-sm-6">
                             <div class="friend-card">
                                 <img src="./assets/img/cardColour.png" alt="profile-cover" class="img-responsive cover">
@@ -694,6 +694,17 @@
 
 
                 </div>
+
+
+                <div class="chat-popup form-popup" id="myForm">
+                    <form action="/action_page.php" class="form-container">
+                        <h1>Chat</h1>
+                        <label for="msg"><b>Message</b></label>
+                        <textarea placeholder="Type message.." name="msg" required></textarea>
+                        <button type="submit" class="btn">Send</button>
+                        <button type="button" class="btn cancel" onclick="closeForm()">Close</button>
+                    </form>
+                </div>
                 <!-- end of friends tab -->
             </div>
 
@@ -702,15 +713,7 @@
         </div>
 
 
-        <div class="chat-popup form-popup" id="myForm">
-        <form action="/action_page.php" class="form-container">
-            <h1>Chat</h1>
-            <label for="msg"><b>Message</b></label>
-            <textarea placeholder="Type message.." name="msg" required></textarea>
-            <button type="submit" class="btn">Send</button>
-            <button type="button" class="btn cancel" onclick="closeForm()">Close</button>
-        </form>
-    </div>
+
 
 
 

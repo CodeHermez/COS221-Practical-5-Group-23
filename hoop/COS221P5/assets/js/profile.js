@@ -86,7 +86,7 @@ $(document).ready(function () {
             UserCard.className = 'col-md-4 col-sm-6';
             UserCard.innerHTML = `
                 <div class="friend-card">
-                  <img src="https://www.bootdey.com/image/400x100/6495ED" alt="profile-cover" class="img-responsive cover">
+                  <img src="./assets/img/cardColour.png" alt="profile-cover" class="img-responsive cover">
                   <div class="card-info">
                     <div class="friend-info">
                       <a href="#" class="pull-right text-green add-friend"  data-friend-id=${user.username}>Add Friend</a>
@@ -173,7 +173,7 @@ $(document).ready(function () {
 
     // Function to create and display friend cards
     function displayFriends(friends) {
-        const container = document.getElementById('row');
+        const container = document.getElementById('friend');
         container.innerHTML = ''; // Clear any existing content
 
         friends.forEach(friend => {
@@ -181,7 +181,7 @@ $(document).ready(function () {
             friendCard.className = 'col-md-4 col-sm-6';
             friendCard.innerHTML = `
             <div class="friend-card">
-              <img src="https://www.bootdey.com/image/400x100/6495ED" alt="profile-cover" class="img-responsive cover">
+              <img src="./assets/img/cardColour.png" alt="profile-cover" class="img-responsive cover">
               <div class="card-info">
                 <img src="./assests/img/${friend.profile_picture}.png" alt="user" class="profile-photo-lg">
                 <div class="friend-info">

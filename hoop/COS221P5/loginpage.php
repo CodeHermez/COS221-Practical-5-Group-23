@@ -8,7 +8,7 @@
 </head>
 <body>
   <div class="wrapper">
-    <form id = "loginForm" action="#">
+    <form id="loginForm">
       <h2>Login</h2>
         <div class="input-field">
         <input type="text" id ="email" required>
@@ -18,19 +18,19 @@
         <input type="password" id = "password" required>
         <label>Enter your password</label>
       </div>
-      <div class="forget">
+      <!-- <div class="forget">
         <label for="remember">
           <input type="checkbox" id="remember">
           <p>Remember me</p>
         </label>
         <a href="#">Forgot password?</a>
-      </div>
+      </div> -->
       <button type="submit">Log In</button>
       <div class="register">
         <p>Don't have an account? <a href="registerpage.php">Register</a></p>
       </div>
     </form>
   </div>
-  <script src ="assets/js/login.js"></script>
+  <script src ="assets/js/loginfinal.js"></script>
 </body>
 </html>
