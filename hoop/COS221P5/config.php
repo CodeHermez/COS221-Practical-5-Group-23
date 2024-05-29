@@ -7,8 +7,8 @@ class Database{
     // private $host = "localhost";
 
 
-//wheatley user
-    private $user = "uXXXXXXXXXX";
+// wheatley user
+    private $user = "u22659812";
 //localhost user
     // private $user = "root";
 
