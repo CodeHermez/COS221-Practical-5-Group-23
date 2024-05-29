@@ -26,6 +26,8 @@ document.addEventListener('DOMContentLoaded', function () {
           try {
             const result = JSON.parse(text); // Parse the text as JSON
             window.location.href = 'login.php';
+            localStorage.setItem("username", result.data.username);
+            localStorage.setItem("profile", result.data.profile_picture);
             alert('Registration successful: ' + result.data.username);
           } catch (jsonError) {
             console.error('Error parsing JSON:', jsonError);
