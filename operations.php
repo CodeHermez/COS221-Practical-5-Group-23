@@ -1011,6 +1011,7 @@ class UpdateProfile{ //email, age, profile picture, username
                 //check if username matched
                 if($results['username']===$username){
                     unset($stmt);
+                    http_response_code(400);
                     return [
                         "exists" => true,
                         "message" => "Username is taken."
@@ -1030,6 +1031,7 @@ class UpdateProfile{ //email, age, profile picture, username
     private function validEmail($email, $username){
         //check that the structure is valid - 
         if(!filter_var($email, FILTER_VALIDATE_EMAIL)){
+            http_response_code(400); 
             return[
                 "valid" => false,
                 "message" => "Invalid structure for email."
@@ -1049,6 +1051,7 @@ class UpdateProfile{ //email, age, profile picture, username
     
                 $results = $stmt->fetch(PDO::FETCH_ASSOC);
                 if($results['email']===$email){
+                    http_response_code(400); 
                     unset($stmt);
                     return [
                         "valid" => false,
@@ -1056,6 +1059,7 @@ class UpdateProfile{ //email, age, profile picture, username
                     ];
                 }
             } catch (PDOException $e) {
+                http_response_code(500);
                 return [
                     "valid" => false, //just to get error message to send through
                     "message" => $e->getMessage() 
@@ -1077,6 +1081,7 @@ class UpdateProfile{ //email, age, profile picture, username
         $params = [];
         if ($age !== null && $age !== false) {
             if ($age < 13) {
+                http_response_code(400);
                 return createJSONResponse("error", "Age must be greater than 13.");
             }
             $fields[] = "age = ?";
@@ -1089,11 +1094,11 @@ class UpdateProfile{ //email, age, profile picture, username
                 $fields[] = "email = ?";
                 $params[] = $email;
             } else {
-                return createJSONResponse("error", $information['message']);
+                return createJSONResponse("error", $information['message']); //response code is in validEmail function
             }
         }
 
-        if (isset($profile_picture) && $profile_picture!== "") {
+        if (isset($profile_picture) && $profile_picture!== ""){
             $fields[] = "profile_picture = ?";
             $params[] = $profile_picture;
         }
@@ -1105,7 +1110,7 @@ class UpdateProfile{ //email, age, profile picture, username
                 $fields[] = "username = ?";
                 $params[] = $username;
             } else {
-                return createJSONResponse("error", $information['message']);
+                return createJSONResponse("error", $information['message']);    //response code is in teh validUser functions
             }
         }
     
@@ -1127,10 +1132,19 @@ class UpdateProfile{ //email, age, profile picture, username
                 $_SESSION['username'] = $username;
             }
 
+            $query = "SELECT name, email, username, age, profile_picture, created_at, type FROM user WHERE username = ?";
+            $stmt = $this->connection->prepare($query);
+            $stmt->bindValue(1, $_SESSION['username'], PDO::PARAM_STR);
+            $stmt->execute();
+            $updatedUser = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            $updatedUser['age'] = (int) $updatedUser['age'];
+            $updatedUser['profile_picture'] = (int) $updatedUser['profile_picture'];
+
             unset($stmt);
             
             http_response_code(200);
-            return createJSONResponse("success", "Profile updated successfully");
+            return createJSONResponse("success", $updatedUser);
         } catch (PDOException $e) {
             unset($stmt);
             http_response_code(500);
