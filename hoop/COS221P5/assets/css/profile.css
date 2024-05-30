@@ -1,255 +1,329 @@
 
-    	body{
-    background:black;
-    padding-top:20px;
-}
-.img-fluid {
-    max-width: 100%;
-    height: 100%;
-    object-fit:cover;
-}
-
-.card .img-fluid{
-    width: 100%; /* Adjust width and height as needed */
-    height: 400px;
-}
-
-.card {
-    margin-bottom: 30px;
-
-}
-
-.overflow-hidden {
-    overflow: hidden!important;
-}
-
-.p-0 {
-    padding: 0!important;
-    
-
-}
-
-.top{
-    width: 400px; /* Adjust width and height as needed */
-    height: 400px;
-}
-
-.mt-n5 {
-    margin-top: -3rem!important;
-}
-
-.linear-gradient {
-    background-image: linear-gradient(#27a776,#f44c66);
-}
-
-.rounded-circle {
-    border-radius: 50%!important;
-}
-
-.align-items-center {
-    align-items: center!important;
-}
-
-.justify-content-center {
-    justify-content: center!important;
-}
-
-.d-flex {
-    display: flex!important;
-}
-
-.rounded-2 {
-    border-radius: 7px !important;
-}
-
-.bg-light-info {
-    --bs-bg-opacity: 1;
-    background-color: rgba(235,243,254,1)!important;
-    /* background-color: #27a776 !important; */
-}
-
-.card {
-    margin-bottom: 30px;
-}
-
-.position-relative {
-    position: relative!important;
-}
-
-.shadow-none {
-    box-shadow: none!important;
-}
-
-.overflow-hidden {
-    overflow: hidden!important;
-}
-
-.border {
-    border: 1px solid #ebf1f6 !important;
-}
-
-.fs-6 {
-    font-size: 1.25rem!important;
-}
-
-.mb-2 {
-    margin-bottom: 0.5rem!important;
-}
-
-.d-block {
-    display: block!important;
-}
-
-a {
-    text-decoration: none;
-}
-
-.user-profile-tab .nav-item .nav-link.active {
-    /* color: #5d87ff;
-    border-bottom: 2px solid #5d87ff; */
-    color: #27a776;
-    border-bottom: 2px solid #27a776;
-}
-
-.mb-9 {
-    margin-bottom: 20px!important;
-}
-
-.fw-semibold {
-    font-weight: 600!important;
-}
-.fs-4 {
-    font-size: 1rem!important;
-}
-
-.card, .bg-light {
-    box-shadow: 0 20px 27px 0 rgb(0 0 0 / 5%);
-}
-
-.fs-2 {
-    font-size: .75rem!important;
-}
-
-.rounded-4 {
-    border-radius: 4px !important;
-}
-
-.ms-7 {
-    margin-left: 30px!important;
-}
-
-
-.friend-list .friend-card{
-    border-radius: 4px;
-    border: 1px solid #f1f2f2;
-    border-bottom: 1px solid #f1f2f2;
-    overflow: hidden;
-    margin-bottom: 20px;
-    margin: 50px;
-  }
-
-  .friend-card .img-responsive{
-    max-width: 100%;
-    height: 100%;
-    object-fit:cover;
-
-  }
-  
-  .friend-list .friend-card .card-info{
-    padding: 0 20px 10px;
    
-    
-  }
-  
-  .friend-list .friend-card .card-info img.profile-photo-lg{
-    margin-top: -60px;
-    border: 7px solid #fff;
-  }
-  
-  img.profile-photo-lg {
-      height: 80px;
-      width: 80px;
-      border-radius: 50%;
-  }
-  
-  .text-green {
-      color: #8dc63f;
-  }
-
-  .chat-popup {
-    display: none;
-  }
-
-
-
-/* Button used to open the chat form - fixed at the bottom of the page */
-.open-button {
-  background-color: #555;
-  color: white;
-  padding: 16px 20px;
-  border: none;
-  cursor: pointer;
-  opacity: 0.8;
-  position: fixed;
-  bottom: 23px;
-  right: 28px;
-  width: 280px;
-}
-
-/* The popup chat - hidden by default */
-.form-popup {
-  display: none;
-  position: fixed;
-  bottom: 0;
-  right: 15px;
-  border: 3px solid #f1f1f1;
-  z-index: 9;
-}
-
-/* Add styles to the form container */
-.form-container {
-  max-width: 300px;
-  padding: 10px;
-  background-color: white;
-}
-
-/* Full-width textarea */
-.form-container textarea {
-  width: 100%;
-  padding: 15px;
-  margin: 5px 0 22px 0;
-  border: none;
-  background: #f1f1f1;
-  resize: none;
-  min-height: 200px;
-}
-
-/* When the textarea gets focus, do something */
-.form-container textarea:focus {
-  background-color: #ddd;
-  outline: none;
-}
-
-/* Set a style for the submit/login button */
-.form-container .btn {
-  background-color: #04AA6D;
-  color: white;
-  padding: 16px 20px;
-  border: none;
-  cursor: pointer;
-  width: 100%;
-  margin-bottom:10px;
-  opacity: 0.8;
-}
-
-/* Add a red background color to the cancel button */
-.form-container .cancel {
-  background-color: red;
-}
-
-/* Add some hover effects to buttons */
-.form-container .btn:hover, .open-button:hover {
-  opacity: 1;
-}
-
-
+    	body{
+            background:black;
+            padding-top:20px;
+        }
+        .img-fluid {
+            max-width: 100%;
+            height: 100%;
+            object-fit:cover;
+        }
+        
+        .card .img-fluid{
+            width: 100%; /* Adjust width and height as needed */
+            height: 400px;
+        }
+        
+        .card {
+            margin-bottom: 30px;
+        
+        }
+        
+        .overflow-hidden {
+            overflow: hidden!important;
+        }
+        
+        .p-0 {
+            padding: 0!important;
+            
+        
+        }
+        
+        .top{
+            width: 400px; /* Adjust width and height as needed */
+            height: 400px;
+        }
+        
+        .mt-n5 {
+            margin-top: -3rem!important;
+        }
+        
+        .linear-gradient {
+            background-image: linear-gradient(#27a776,#f44c66);
+        }
+        
+        .rounded-circle {
+            border-radius: 50%!important;
+        }
+        
+        .align-items-center {
+            align-items: center!important;
+        }
+        
+        .justify-content-center {
+            justify-content: center!important;
+        }
+        
+        .d-flex {
+            display: flex!important;
+        }
+        
+        .rounded-2 {
+            border-radius: 7px !important;
+        }
+        
+        .bg-light-info {
+            --bs-bg-opacity: 1;
+            background-color: rgba(235,243,254,1)!important;
+            /* background-color: #27a776 !important; */
+        }
+        
+        .card {
+            margin-bottom: 30px;
+        }
+        
+        .position-relative {
+            position: relative!important;
+        }
+        
+        .shadow-none {
+            box-shadow: none!important;
+        }
+        
+        .overflow-hidden {
+            overflow: hidden!important;
+        }
+        
+        .border {
+            border: 1px solid #ebf1f6 !important;
+        }
+        
+        .fs-6 {
+            font-size: 1.25rem!important;
+        }
+        
+        .mb-2 {
+            margin-bottom: 0.5rem!important;
+        }
+        
+        .d-block {
+            display: block!important;
+        }
+        
+        a {
+            text-decoration: none;
+        }
+        
+        .user-profile-tab .nav-item .nav-link.active {
+            /* color: #5d87ff;
+            border-bottom: 2px solid #5d87ff; */
+            color: #27a776;
+            border-bottom: 2px solid #27a776;
+        }
+        
+        .mb-9 {
+            margin-bottom: 20px!important;
+        }
+        
+        .fw-semibold {
+            font-weight: 600!important;
+        }
+        .fs-4 {
+            font-size: 1rem!important;
+        }
+        
+        .card, .bg-light {
+            box-shadow: 0 20px 27px 0 rgb(0 0 0 / 5%);
+        }
+        
+        .fs-2 {
+            font-size: .75rem!important;
+        }
+        
+        .rounded-4 {
+            border-radius: 4px !important;
+        }
+        
+        .ms-7 {
+            margin-left: 30px!important;
+        }
+        
+        
+        .friend-list .friend-card{
+            border-radius: 4px;
+            border: 1px solid #f1f2f2;
+            border-bottom: 1px solid #f1f2f2;
+            overflow: hidden;
+            margin-bottom: 20px;
+            margin: 50px;
+          }
+        
+          .friend-card .img-responsive{
+            max-width: 100%;
+            height: 100%;
+            object-fit:cover;
+        
+          }
+          
+          .friend-list .friend-card .card-info{
+            padding: 0 20px 10px;
+           
+            
+          }
+          
+          .friend-list .friend-card .card-info img.profile-photo-lg{
+            margin-top: -60px;
+            border: 7px solid #fff;
+          }
+          
+          img.profile-photo-lg {
+              height: 80px;
+              width: 80px;
+              border-radius: 50%;
+          }
+          
+          .text-green {
+              color: #8dc63f;
+          }
+        
+          .chat-popup {
+            display: none;
+          }
+        
+        
+        
+        /* Button used to open the chat form - fixed at the bottom of the page */
+        .open-button {
+          background-color: #555;
+          color: white;
+          padding: 16px 20px;
+          border: none;
+          cursor: pointer;
+          opacity: 0.8;
+          position: fixed;
+          bottom: 23px;
+          right: 28px;
+          width: 280px;
+        }
+        
+        /* The popup chat - hidden by default */
+        .form-popup {
+          display: none;
+          position: fixed;
+          bottom: 0;
+          right: 15px;
+          border: 3px solid #f1f1f1;
+          z-index: 9;
+        }
+        
+        /* Add styles to the form container */
+        .form-container {
+          max-width: 300px;
+          padding: 10px;
+          background-color: white;
+        }
+        
+        /* Full-width textarea */
+        .form-container textarea {
+          width: 100%;
+          padding: 15px;
+          margin: 5px 0 22px 0;
+          border: none;
+          background: #f1f1f1;
+          resize: none;
+          min-height: 200px;
+        }
+        
+        /* When the textarea gets focus, do something */
+        .form-container textarea:focus {
+          background-color: #ddd;
+          outline: none;
+        }
+        
+        /* Set a style for the submit/login button */
+        .form-container .btn {
+          background-color: #04AA6D;
+          color: white;
+          padding: 16px 20px;
+          border: none;
+          cursor: pointer;
+          width: 100%;
+          margin-bottom:10px;
+          opacity: 0.8;
+        }
+        
+        /* Add a red background color to the cancel button */
+        .form-container .cancel {
+          background-color: red;
+        }
+        
+        /* Add some hover effects to buttons */
+        .form-container .btn:hover, .open-button:hover {
+          opacity: 1;
+        }
+        
+        
+        .review-number {
+            float: left;
+            width: 35px;
+            line-height: 1;
+        }
+        
+        .review-number div {
+            height: 9px;
+            margin: 5px 0
+        }
+        
+        .review-progress {
+            float: left;
+            width: 230px;
+        }
+        
+        .review-progress .progress {
+            margin: 8px 0;
+        }
+        
+        .progress-number {
+            margin-left: 10px;
+            float: left;
+        }
+        
+        .rating-block,
+        .review-block {
+            background-color: #fff;
+            border: 1px solid #e1e6ef;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .review-block {
+            margin-bottom: 20px;
+        }
+        
+        .review-block-img img {
+            height: 60px;
+            width: 60px;
+        }
+        
+        .review-block-name {
+            font-size: 12px;
+            margin: 10px 0;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .review-block-name a {
+            color: #374767;
+        }
+        
+        .review-block-date {
+            font-size: 12px;
+        }
+        
+        .review-block-rate {
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+        
+        .review-block-title {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .review-block-description {
+            font-size: 13px;
+        }

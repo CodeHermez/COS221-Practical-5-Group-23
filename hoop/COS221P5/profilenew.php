@@ -14,6 +14,7 @@
 <body>
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
     <div class="container">
+    <button type="button" class="btn btn-info">Home</button>
         <div class="card overflow-hidden">
             <div class="card-body p-0">
                 <img src="./assets/img/hero-bg.jpg" alt class="img-fluid">
@@ -494,15 +495,76 @@
             <!-- review tab -->
             <div class="tab-pane fade " id="pills-reviews" role="tabpanel" aria-labelledby="pills-reviews-tab"
                 tabindex="0">
+
+                <div id="review"></div>
                 <div class="card" style="width: 18rem;">
-                    <img src="..." class="card-img-top" alt="...">
+                    <img src="./assets/img/hero-bg.jpg" class="card-img-top" alt="..." id="review-image">
+                    <h3 id="comment-star"></h3>
+                    <h3> star rating</h3>
                     <div class="card-body">
-                        <h5 class="card-title">Card title</h5>
-                        <p class="card-text">Some quick example text to build on the card title and make up the bulk of
-                            the card's content.</p>
-                        <a href="#" class="btn btn-primary">Go somewhere</a>
+                        <p class="card-text" id="comment-display"></p>
+                        <a href="#" class="btn btn-primary">remove review</a>
                     </div>
                 </div>
+
+                <section style="background-color: #d94125;">
+                    <div class="container my-5 py-5 text-body">
+                        <div class="row d-flex justify-content-center">
+                            <div class="col-md-10 col-lg-8 col-xl-6">
+                                <div class="card">
+                                    <div class="card-body p-4">
+                                        <div class="d-flex flex-start w-100">
+                                            <img class="rounded-circle shadow-1-strong me-3"
+                                                src="https://bootdey.com/img/Content/avatar/avatar7.png" alt="avatar"
+                                                width="65" height="65" />
+                                            <div class="w-100">
+                                                <h5>Add a comment</h5>
+                                                
+                                                <div class="dropdown">
+                                                    <a class="btn btn-secondary dropdown-toggle" href="#" role="button"
+                                                        id="dropdownMenuLink" data-bs-toggle="dropdown"
+                                                        aria-expanded="false">
+                                                        star rating
+                                                    </a>
+
+                                                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                                                        <li><a class="dropdown-item" href="#">1</a></li>
+                                                        <li><a class="dropdown-item" href="#">2</a></li>
+                                                        <li><a class="dropdown-item" href="#">3</a></li>
+                                                        <li><a class="dropdown-item" href="#">4</a></li>
+                                                        <li><a class="dropdown-item" href="#">5</a></li>
+                                                    </ul>
+                                                </div>
+
+                                            <br>
+
+                                                <div class="form-outline" data-mdb-input-init>
+                                                    <input type="text" id="form12" class="form-control" />
+                                                    <label class="form-label" for="form12">Enter movie title</label>
+                                                </div>
+                                                <div data-mdb-input-init class="form-outline">
+                                                    <textarea class="form-control" id="textAreaExample"
+                                                        rows="4"></textarea>
+                                                    <label class="form-label" for="textAreaExample">What is your
+                                                        view?</label>
+                                                </div>
+                                                <div class="d-flex justify-content-between mt-3">
+                                                    <button type="button" data-mdb-button-init data-mdb-ripple-init
+                                                        class="btn btn-danger" id="send-review">
+                                                        Send <i class="fas fa-long-arrow-alt-right ms-1"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+
+
 
                 <!-- end of review tabs       -->
             </div>
