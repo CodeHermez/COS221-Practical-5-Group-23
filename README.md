@@ -57,6 +57,6 @@ Meet team behind the Hoop Streaming Platform:
 
 
 ***How to run***
-Import the dump to a databse of choice
-Edit the connection of the config files to match the chosen database
-Run the website in localhost, make sure that the API is hosted on XMAPP
+- Import the dump to a databse of choice
+- Edit the connection of the config files to match the chosen database
+- Run the website in localhost, make sure that the API is hosted on XMAPP
