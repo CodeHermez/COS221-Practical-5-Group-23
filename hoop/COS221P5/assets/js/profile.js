@@ -1,11 +1,3 @@
-function openForm() {
-    document.getElementById("myForm").style.display = "block";
-}
-
-function closeForm() {
-    document.getElementById("myForm").style.display = "none";
-}
-
 function updateTabContent(tabId, newContent) {
     $(tabId).html(newContent);
 }
@@ -38,27 +30,38 @@ $(document).ready(function () {
 
     });
 
-    $('#pills-friends-tab').on('click', function () {
+    $('#pills-friends-tab').on('click', async function () {
 
-        getFriends();
+        await getFriends(username);
 
     });
+
+    function openForm() {
+        document.getElementById("myForm").style.display = "block";
+    }
+
+    function closeForm() {
+        document.getElementById("myForm").style.display = "none";
+    }
+
+    // Expose openForm and closeForm to the global scope
+    window.openForm = openForm;
+    window.closeForm = closeForm;
 
 
 
     function getALLuser() {
-        const formData = {
-            username: $username,
-            limit: 20,
-            order: "ASC"
-        };
+        // const formData = {
+        //     username: username,
+        //     limit: 20,
+        //     order: "ASC"
+        // };
 
         fetch('http://localhost/hoop_tshepi/COS221P5/getUsers.php', {
-            method: 'GET',
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(formData),
         })
             .then(response => response.json())
             .then(data => {
@@ -88,6 +91,7 @@ $(document).ready(function () {
                 <div class="friend-card">
                   <img src="./assets/img/cardColour.png" alt="profile-cover" class="img-responsive cover">
                   <div class="card-info">
+                  <img src="./assets/img/1.png" alt="user" class="profile-photo-lg">
                     <div class="friend-info">
                       <a href="#" class="pull-right text-green add-friend"  data-friend-id=${user.username}>Add Friend</a>
                       <h5><a href="profilnew.php" class="profile-link">${user.username}</a></h5>
@@ -112,23 +116,23 @@ $(document).ready(function () {
                 const friendId = this.getAttribute('data-friend-id'); // Get the friend ID
 
                 // Perform the HTTP request to remove the friend
-                fetch('http://localhost/hoop_tshepi/COS221P5/RemoveFriend.php', {
+                fetch('http://localhost/hoop_tshepi/COS221P5/addFriend.php', {
                     method: 'POST', // or 'DELETE' depending on your API
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ friendID: friendId })
+                    body: JSON.stringify({ friendID: friendId})
                 })
                     .then(response => response.json())
                     .then(data => {
-                        if (data.success) {
+                        if (data.status === 'success') {
                             // Handle successful removal, e.g., remove the friend card from the DOM
-                            const friendCard = this.closest('.friend-card');
-                            friendCard.parentNode.appendChild(friendCard);
+                            // const friendCard = this.closest('.friend-card');
+                            // friendCard.parentNode.appendChild(friendCard);
                             alert('Friend added successfully');
                         } else {
                             // Handle error
-                            alert('Failed to add friend');
+                            alert("failed to add friend");
                         }
                     })
                     .catch(error => {
@@ -143,32 +147,43 @@ $(document).ready(function () {
 
 
 
-    function getFriends() {
+    async function getFriends(username) {
+
+        try {
+            const response = await fetch(`http://localhost/hoop_tshepi/COS221P5/getFriends.php?username=${username}`);
+            const data = await response.json();
+            if (data.status === 'success') {
+                displayFriends(data.data); // Pass the data array to the display function
+            } else {
+                alert('Failed to load friends');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('An error occurred while fetching friends');
+        }
 
 
-        const formData = {
-            username: username
-        };
+        
 
-        fetch('http://localhost/hoop_tshepi/COS221P5/getFriends.php', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(formData),
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    displayFriends(data.data); // Pass the data array to the display function
-                } else {
-                    alert('Failed to load friends');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while fetching friends');
-            });
+        // fetch(`http://localhost/hoop_tshepi/COS221P5/getFriends.php?username=${username}`, {
+        //     method: 'GET',
+        //     headers: {
+        //         'Content-Type': 'application/json',
+        //     },
+
+        // })
+        //     .then(response => response.json())
+        //     .then(data => {
+        //         if (data.status === 'success') {
+        //             displayFriends(data.data); // Pass the data array to the display function
+        //         } else {
+        //             alert('Failed to load friends');
+        //         }
+        //     })
+        //     .catch(error => {
+        //         console.error('Error:', error);
+        //         alert('An error occurred while fetching friends');
+        //     });
     }
 
     // Function to create and display friend cards
@@ -183,9 +198,9 @@ $(document).ready(function () {
             <div class="friend-card">
               <img src="./assets/img/cardColour.png" alt="profile-cover" class="img-responsive cover">
               <div class="card-info">
-                <img src="./assests/img/${friend.profile_picture}.png" alt="user" class="profile-photo-lg">
+                <img src="./assets/img/${friend.profile_picture}.png" alt="user" class="profile-photo-lg">
                 <div class="friend-info">
-                  <a href="#" class="pull-right text-green remove-friend"  data-friend-id=${friend.friendID}>Remove Friend</a>
+                  <a href="#" class="pull-right text-green remove-friend"  data-friend-id=${friend.friendID}>Remove Friend</a><br>
                   <a href="#" class="pull-right text-green message-friend" data-friend-id="${friend.friendID}">Message</a>
                   <h5><a href="timeline.html" class="profile-link">${friend.friendID}</a></h5>
                 </div>
@@ -219,24 +234,29 @@ $(document).ready(function () {
                 event.preventDefault(); // Prevent the default link behavior
 
                 const friendId = this.getAttribute('data-friend-id'); // Get the friend ID
+                const formData = {
+                        username: username,
+                        friendID: friendId
+                    };
 
                 // Perform the HTTP request to remove the friend
-                fetch('http://localhost/hoop_tshepi/COS221P5/RemoveFriend.php', {
+                fetch('http://localhost/hoop_tshepi/COS221P5/removeFriend.php', {
                     method: 'POST', // or 'DELETE' depending on your API
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ friendID: friendId })
+                    body: JSON.stringify(formData)
                 })
                     .then(response => response.json())
                     .then(data => {
-                        if (data.success) {
+                        if (data.success === "success") {
                             // Handle successful removal, e.g., remove the friend card from the DOM
                             const friendCard = this.closest('.friend-card');
                             friendCard.parentNode.removeChild(friendCard);
                             alert('Friend removed successfully');
                         } else {
                             // Handle error
+                            console.log(data.message);
                             alert('Failed to remove friend');
                         }
                     })

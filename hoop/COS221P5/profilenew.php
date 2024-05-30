@@ -111,9 +111,8 @@
                     <li class="nav-item" role="presentation">
                         <button
                             class="nav-link position-relative rounded-0 d-flex align-items-center justify-content-center bg-transparent fs-3 py-6"
-                            id="pills-followers-tab" data-bs-toggle="pill" data-bs-target="#pills-followers"
-                            type="button" role="tab" aria-controls="pills-followers" aria-selected="false"
-                            tabindex="-1">
+                            id="pills-reviews-tab" data-bs-toggle="pill" data-bs-target="#pills-reviews" type="button"
+                            role="tab" aria-controls="pills-reviews" aria-selected="false" tabindex="-1">
                             <i class="fa fa-heart me-2 fs-6"></i>
                             <span class="d-none d-md-block">Reviews</span>
                         </button>
@@ -166,8 +165,8 @@
         <div class="tab-content" id="pills-tabContent">
 
             <!-- WatchList tab -->
-            <div class="tab-pane fade " id="pills-gallery" role="tabpanel"
-                aria-labelledby="pills-gallery-tab" tabindex="0">
+            <div class="tab-pane fade " id="pills-gallery" role="tabpanel" aria-labelledby="pills-gallery-tab"
+                tabindex="0">
 
                 <div class="d-sm-flex align-items-center justify-content-between mt-3 mb-4">
                     <h3 class="mb-3 mb-sm-0 fw-semibold d-flex align-items-center">Gallery <span
@@ -487,9 +486,25 @@
             <!-- profile tab -->
             <div class="tab-pane fade show active" id="pills-profile" role="tabpanel"
                 aria-labelledby="pills-profile-tab" tabindex="0">
-                <h3>Profile Information</h3>
-                <p>Details about the user's profile...</p>
+
                 <!-- end of profile tabs       -->
+            </div>
+
+
+            <!-- review tab -->
+            <div class="tab-pane fade " id="pills-reviews" role="tabpanel" aria-labelledby="pills-reviews-tab"
+                tabindex="0">
+                <div class="card" style="width: 18rem;">
+                    <img src="..." class="card-img-top" alt="...">
+                    <div class="card-body">
+                        <h5 class="card-title">Card title</h5>
+                        <p class="card-text">Some quick example text to build on the card title and make up the bulk of
+                            the card's content.</p>
+                        <a href="#" class="btn btn-primary">Go somewhere</a>
+                    </div>
+                </div>
+
+                <!-- end of review tabs       -->
             </div>
 
             <!-- more friends -->
@@ -550,7 +565,7 @@
                                 <img src="https://www.bootdey.com/image/400x100/228B22" alt="profile-cover"
                                     class="img-responsive cover">
                                 <div class="card-info">
-                                    <img src="./assets/img/cardColour.png" alt="user"
+                                    <img src="https://bootdey.com/img/Content/avatar/avatar4.png" alt="user"
                                         class="profile-photo-lg">
                                     <div class="friend-info">
                                         <a href="#" class="pull-right text-green">My Friend</a>
@@ -563,7 +578,7 @@
 
                         <div class="col-md-4 col-sm-6">
                             <div class="friend-card">
-                                <img src="./assets/img/cardColour.png" alt="profile-cover"
+                                <img src="https://www.bootdey.com/image/400x100/20B2AA" alt="profile-cover"
                                     class="img-responsive cover">
                                 <div class="card-info">
                                     <img src="https://bootdey.com/img/Content/avatar/avatar3.png" alt="user"
@@ -579,7 +594,7 @@
 
                         <div class="col-md-4 col-sm-6">
                             <div class="friend-card">
-                                <img src="./assets/img/cardColour.png" alt="profile-cover"
+                                <img src="https://www.bootdey.com/image/400x100/FF4500" alt="profile-cover"
                                     class="img-responsive cover">
                                 <div class="card-info">
                                     <img src="https://bootdey.com/img/Content/avatar/avatar2.png" alt="user"
@@ -598,7 +613,7 @@
             </div>
 
             <!-- friends tab -->
-            <div class="tab-pane fade " id="pills-friends" role="tabpanel" aria-labelledby="pills-friends-tab"
+            <div class="tab-pane fade" id="pills-friends" role="tabpanel" aria-labelledby="pills-friends-tab"
                 tabindex="0">
                 <div class="friend-list">
                     <div class="row" id="friend">
@@ -694,10 +709,8 @@
 
 
                 </div>
-
-
                 <div class="chat-popup form-popup" id="myForm">
-                    <form action="/action_page.php" class="form-container">
+                    <form class="form-container">
                         <h1>Chat</h1>
                         <label for="msg"><b>Message</b></label>
                         <textarea placeholder="Type message.." name="msg" required></textarea>
@@ -717,7 +730,6 @@
 
 
 
-
         <!-- end  of container -->
     </div>
 
@@ -725,9 +737,8 @@
 
     <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script type="text/javascript">
+    <script src="assets/js/profile.js"></script>
 
-    </script>
 </body>
 
 </html>
