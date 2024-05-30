@@ -16,7 +16,7 @@ Welcome to the Hoop Streaming Platform project! As part of your second-year Comp
 ## Technology Stack
 Here's a breakdown of the technologies being used by your talented team:
 1. Frontend Development:
-    - ***Languages:*** Vanilla JavaScript, HTML, CSS
+    - ***Languages:*** JavaScript, HTML, CSS
     - ***Frameworks/Libraries***: Potentially Bootstrap for UI components
 1. Backend Development:
     - ***Language:*** PHP
@@ -56,8 +56,7 @@ Meet team behind the Hoop Streaming Platform:
     - GitHub: CodeHermez
 
 
-We welcome feedback, bug reports, and feature requests! Feel free to open issues or submit pull requests on our GitHub repository.
-
-## Happy coding!!!
-
-#### And please remember to look up how to use Github/Git and Git branching so we can mitigate any issues like merge conflicts❗❗❗
+***How to run***
+Import the dump to a databse of choice
+Edit the connection of the config files to match the chosen database
+Run the website in localhost, make sure that the API is hosted on XMAPP
