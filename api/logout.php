@@ -1,4 +1,5 @@
 <?php
+
 // error_reporting(E_ALL); ini_set('display_errors', 1);
 header('Access-Control-Allow-Origin: *');
 header("Content-Type: application/json");
@@ -8,16 +9,11 @@ header("Allow-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers,
 include_once '../config.php';
 include_once "../operations.php";
 
-$database = Database::instance();
-$dbc = $database->getConnection();
-$data = json_decode(file_get_contents("php://input"), true);
-//-------------------------------------------------------------------------------------------------------------------------------------
-
-
-if($_SERVER['REQUEST_METHOD'] === "POST"){
-    $usr_login = new Login($dbc);
-    $response =  $usr_login->handleLogin();
-
+if($_SERVER['REQUEST_METHOD'] === "GET"){
+    
+    $usr_out = new Logout();
+    $response =  $usr_out->handleLogout();
+    
     header('Content-Type: application/json');
     echo $response;
 }
